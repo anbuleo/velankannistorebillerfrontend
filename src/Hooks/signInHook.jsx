@@ -44,6 +44,7 @@ const signInHook = () => {
         } catch (error) {
             // setCode(error.response.data.statusCode)
             // setMessage(error.response.data.message)
+                toast.error('Error occurs')
                 console.log(error)
         } finally {
             setLoading(false)

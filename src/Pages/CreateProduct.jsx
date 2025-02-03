@@ -21,6 +21,7 @@ function CreateProduct() {
 
     const ProductSchema = Yup.object().shape({
         productName : Yup.string().required('Required Name *'),
+        tanglishName: Yup.string().required('Required Tanglish Name *') ,
         productCost : Yup.string().required('Required Cost *'),
         productPrice : Yup.string().required('Required Price *'),
         
@@ -29,18 +30,18 @@ function CreateProduct() {
         unitValue : Yup.string().required('Enter One pcs value *'),
         productType : Yup.string().required('Select one *')
     })
-    const handleAddAvathar = async(e)=>{
-      try {
-        const base64 = await convertToBase64(e.target.files[0])
-        // console.log(avathar)
-        // console.log(base64)
-      setFile(base64)
-      } catch (error) {
+    // const handleAddAvathar = async(e)=>{
+    //   try {
+    //     const base64 = await convertToBase64(e.target.files[0])
+    //     // console.log(avathar)
+    //     // console.log(base64)
+    //   setFile(base64)
+    //   } catch (error) {
 
-        console.log(error)
-      }
+    //     console.log(error)
+    //   }
      
-    }
+    // }
     const handleSubmitValues =async(val)=>{
       // console.log(val)
       await createProduct(val)
@@ -49,7 +50,7 @@ function CreateProduct() {
   return <>
   <div className=" flex justify-end p-4">
    
-    <div className="btn btn-info"><Link to={'/product'}>{`<-- Back`}</Link></div>
+    <div className="btn btn-warning btn-outline"><Link to={'/product'}>{`<-- Back`}</Link></div>
   </div>
   <div className="h-screen place-content-center w-screen ">
     
@@ -71,7 +72,9 @@ function CreateProduct() {
             qantityType:"",
             createBy:JSON.parse(localStorage.getItem("data"))._id ,
             unitValue:"",
-            productCode:""          
+            productCode:"",
+            tanglishName:"",
+            MRP:""          
 
           }}
           validationSchema={ProductSchema}
@@ -87,6 +90,11 @@ function CreateProduct() {
                 <label>Name</label>
                 <input className='input input-bordered w-full text-black' type="text" name='productName' placeholder="Product Name"  onBlur={handleBlur} onChange={handleChange}/>
                 {errors.productName && touched.productName ? <div style={{color:"red"}}>{errors.productName}</div>:null}
+              </div>
+                <div className="">
+                <label>Tanglish Name</label>
+                <input className='input input-bordered w-full text-black' type="text" name='tanglishName' placeholder="Tanglish Name"  onBlur={handleBlur} onChange={handleChange}/>
+                {errors.tanglishName && touched.tanglishName ? <div style={{color:"red"}}>{errors.tanglishName}</div>:null}
               </div>
               <div className="">
               <label>Price of Product</label>
@@ -116,6 +124,11 @@ function CreateProduct() {
                 </div>
              
               <div className="">
+              <div className="">
+              <label>MRP of Product</label>
+                <input className='input input-bordered w-full text-black' type="number" name='MRP' placeholder="MRP Rate"  onBlur={handleBlur} onChange={handleChange}/>
+                {errors.MRP && touched.MRP ? <div style={{color:"red"}}>{errors.MRP}</div>:null}
+              </div>
               <div className="">
               <label>Cost of Product</label>
                 <input className='input input-bordered w-full text-black' type="number" name='productCost' placeholder="Product Cost"  onBlur={handleBlur} onChange={handleChange}/>
@@ -154,8 +167,7 @@ function CreateProduct() {
               <div className="">
                 <label >{'(Optional)'} Avatar</label>
                 <div className="flex">
-                <input type="file" onBlur={handleBlur}   className="file-input file-input-ghost w-full max-w-xs"  name='avatar' accept='image/*' multiple onChange={(e)=>handleAddAvathar(e)}/>
-               
+              
                 </div>
                 
               </div>

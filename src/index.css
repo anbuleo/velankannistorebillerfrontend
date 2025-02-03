@@ -3,12 +3,21 @@
 @tailwind utilities;
 
 body{
-    background: linear-gradient(rgba(0,0,0,0.2),rgba(0,0,0,0.2)),url(./assets/pexels-kendall-hoopes-2901134.jpg);
+    /* background: linear-gradient(rgba(0,0,0,0.2),rgba(0,0,0,0.2)),url(./assets/pexels-kendall-hoopes-2901134.jpg); */
     background-position: no-repeat ;
     background-size: cover;
     background-position: center ;
   
     
+}
+
+#printpaper{
+    background: none;
+    background-color: none;
+    font-weight: bold;
+  font-size:14px;
+  font-family: 'Roboto', sans-serif;
+  
 }
 
 .liAside:hover{
@@ -20,3 +29,19 @@ body{
     align-self: center;
 }
 
+@media print {
+    body {
+      font-family: 'Courier New', monospace; /* Clear font for printing */
+      /* font-size: 8px; Adjust the font size as needed */
+      line-height: 1.5;
+      color: black; /* Ensure black text for better visibility */
+    }
+  
+    
+  
+    table {
+      width: 100%;
+      margin-top: 20px;
+      border-collapse: collapse;
+    }
+}

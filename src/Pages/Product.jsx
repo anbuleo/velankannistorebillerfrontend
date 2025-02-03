@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import Table from '../components/Table'
 import { Link } from 'react-router-dom'
 // import BarCodeContext from '../Context/BarCodeContext'
@@ -11,9 +11,7 @@ function Product() {
   let [data,setData] =useState([])
   
   const {product} = useSelector((state)=>state.product)
-  if(data.length <=0){
-    setData(product)
-  }
+  
   const reloadPage = ()=>{
     try {
       getUSer()
@@ -38,7 +36,7 @@ function Product() {
   return <>
   <div className=' h-screen pt-20 p-2 w-screen '>
   <div className="flex flex-col w-full border-opacity-50 ">
-  <div className=" flex h-20 bg-gray-600  d justify-around rounded-box place-items-center">
+  <div className=" flex h-20 bg-gray-600   justify-around rounded-box place-items-center">
   <div className=""><select className="select select-success w-full max-w-xs " onChange={(e)=>handleDisplayProduct(e.target.value)}>
   <option disabled selected   className='bg-transparent'>Select by catagory</option>
   <option value={"Atta & Flour"}>Atta & Flour</option>

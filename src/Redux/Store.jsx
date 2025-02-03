@@ -3,6 +3,8 @@ import productReducer  from '../common/ProductSlice'
 import storage from 'redux-persist/lib/storage'
 import {persistReducer} from 'redux-persist'
 import {combineReducers} from '@reduxjs/toolkit'
+import cartReducer from '../common/CartSlice'
+import customerReducer from '../common/CustomerSlice'
 
 
 const persistConfig = {
@@ -13,7 +15,9 @@ const persistConfig = {
 
 
 const reducer = combineReducers({
-  product: productReducer
+  product: productReducer,
+  cart : cartReducer,
+  customer : customerReducer
 })
 
 const persistedReducer = persistReducer(persistConfig,reducer)

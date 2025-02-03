@@ -11,6 +11,8 @@ import CreateProduct from './Pages/CreateProduct'
 import AddBarCode from './Pages/AddBarCode'
 import EditProduct from './Pages/EditProduct'
 import BarCodeContext from './Context/BarCodeContext'
+import CreateCoustomer from './Pages/CreateCoustomer'
+import InstaBiller from './Pages/InstaBiller'
 
 
 function App() {
@@ -30,6 +32,8 @@ function App() {
         <Route path='/createproduct' element={<CreateProduct />} />
         <Route path='/addbarcode' element={<AddBarCode />}/>
         <Route path='/editproduct/:id' element={<EditProduct />}/>
+        <Route path='/createcustomer' element={<CreateCoustomer />} />
+        <Route path='/instabiller'  element={<ProtectedRoute><AuthContext><Nav/><InstaBiller /></AuthContext></ProtectedRoute>}/>
       </Routes>
      
       </BrowserRouter>

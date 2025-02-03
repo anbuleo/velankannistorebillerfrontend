@@ -8,11 +8,11 @@ function Nav() {
   let navigate = useNavigate()
   
   return <>
-  <div className="navbar bg-gradient-to-r from-slate-900 to-slate-700 fixed">
+  <div className="navbar bg-gradient-to-r from-slate-900 to-slate-700 fixed z-20">
   <div className="navbar-start">
   <div className="drawer ">
   <input id="my-drawer" type="checkbox" className="drawer-toggle" />
-  <div className="drawer-content ">
+  <div className="drawer-content  ">
     {/* Page content here */}
     <label htmlFor="my-drawer" className="btn btn-square btn-ghost text-orange-200"> <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" className="inline-block w-5 h-5 stroke-current"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16"></path></svg></label>
   </div> 
@@ -26,9 +26,9 @@ function Nav() {
       <li className='liAside'><Link to={'/'}>Sales</Link></li>
       <li className='liAside'><Link to={'/'}>Approval</Link></li>
       <li className='liAside'><Link to={'/'}>Team</Link></li>
-      <li className='liAside'><Link to={'/'}>InstaBiller</Link></li>
+      <li className='liAside'><Link to={'/instabiller'}>InstaBiller</Link></li>
       <li className='liAside'><Link to={'/'}>Biller</Link></li>
-      <li className='liAside'><Link to={'/'}>CreateCustomer</Link></li>
+      <li className='liAside'><Link to={'/createcustomer'}>CreateCustomer</Link></li>
       <li className='liAside'><Link to={'/'}>BarcodePrint</Link></li><li className='btn btn-error  text-orange-200'><p onClick={()=>{
         sessionStorage.clear()
         localStorage.clear()

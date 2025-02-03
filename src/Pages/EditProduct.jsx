@@ -39,11 +39,12 @@ function CreateProduct() {
         productName : Yup.string().required('Required Name *'),
         productCost : Yup.string().required('Required Cost *'),
         productPrice : Yup.string().required('Required Price *'),
-        
+        tanglishName: Yup.string().required('Required Tanglish Name *') ,
         stockQuantity:Yup.string().required('Add Stock *'),
         qantityType:Yup.string().required('Select One *'),
         unitValue : Yup.string().required('Enter One pcs value *'),
-        productType : Yup.string().required('Select one *')
+        productType : Yup.string().required('Select one *'),
+        MRP : Yup.string().required('MRP required*')
     })
     const handleAddAvathar = async(e)=>{
       try {
@@ -94,7 +95,9 @@ function CreateProduct() {
             qantityType:products?.qantityType,
             createBy:JSON.parse(localStorage.getItem("data"))._id ,
             unitValue:products?.unitValue,
-            productCode:products?.productCode    
+            productCode:products?.productCode,
+            tanglishName:products?.tanglishName,
+            MRP:products?.MRP    
 
 
 
@@ -114,6 +117,11 @@ function CreateProduct() {
                 <label>Name</label>
                 <input value={values.productName} className='input input-bordered w-full text-black' type="text" name='productName' placeholder="Product Name"  onBlur={handleBlur} onChange={handleChange}/>
                 {errors.productName && touched.productName ? <div style={{color:"red"}}>{errors.productName}</div>:null}
+              </div>
+                <div className="">
+                <label>Tanglish Name</label>
+                <input value={values.tanglishName} className='input input-bordered w-full text-black' type="text" name='tanglishName' placeholder="Tanglish Name"  onBlur={handleBlur} onChange={handleChange}/>
+                {errors.tanglishName && touched.tanglishName ? <div style={{color:"red"}}>{errors.tanglishName}</div>:null}
               </div>
               <div className="">
               <label>Price of Product</label>
@@ -143,6 +151,11 @@ function CreateProduct() {
                 </div>
              
               <div className="">
+              <div className="">
+              <label>MRP of Product</label>
+                <input value={values.MRP} className='input input-bordered w-full text-black' type="number" name='MRP' placeholder="MRP Cost"  onBlur={handleBlur} onChange={handleChange}/>
+                {errors.MRP && touched.MRP ? <div style={{color:"red"}}>{errors.MRP}</div>:null}
+              </div>
               <div className="">
               <label>Cost of Product</label>
                 <input value={values.productCost} className='input input-bordered w-full text-black' type="number" name='productCost' placeholder="Product Cost"  onBlur={handleBlur} onChange={handleChange}/>
