@@ -5,6 +5,8 @@ import {persistReducer} from 'redux-persist'
 import {combineReducers} from '@reduxjs/toolkit'
 import cartReducer from '../common/CartSlice'
 import customerReducer from '../common/CustomerSlice'
+import saleReducer from '../common/SaleCart'
+import BalanceSheetReducer from '../common/balanceSheet'
 
 
 const persistConfig = {
@@ -17,7 +19,9 @@ const persistConfig = {
 const reducer = combineReducers({
   product: productReducer,
   cart : cartReducer,
-  customer : customerReducer
+  customer : customerReducer,
+  sale:saleReducer,
+  balancesheet:BalanceSheetReducer
 })
 
 const persistedReducer = persistReducer(persistConfig,reducer)

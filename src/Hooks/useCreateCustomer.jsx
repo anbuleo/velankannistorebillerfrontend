@@ -13,7 +13,7 @@ function useCreateCustomer() {
             let res = await AxiosService.post('/customer/createcustomer',val)
             if(res.status ===201){
                 toast.success(res.data.message)
-                navigate('/home')
+                navigate('/customer')
                 setLoading(false)
             }else {
                 toast.warning('Try again later')

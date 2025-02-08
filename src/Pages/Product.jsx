@@ -21,6 +21,7 @@ function Product() {
       console.log(error)
     }
   } 
+  useEffect(()=>{ getUSer()},[])
   const handleDisplayProduct = (value)=>{
         try {
          
@@ -34,10 +35,10 @@ function Product() {
         }
   }
   return <>
-  <div className=' h-screen pt-20 p-2 w-screen '>
-  <div className="flex flex-col w-full border-opacity-50 ">
-  <div className=" flex h-20 bg-gray-600   justify-around rounded-box place-items-center">
-  <div className=""><select className="select select-success w-full max-w-xs " onChange={(e)=>handleDisplayProduct(e.target.value)}>
+  <div className=' h-auto pt-20 p-2 card w-full'>
+  <div className="flex flex-col  border-opacity-50 card  ">
+  <div className=" flex h-20  w-full   justify-between rounded-box place-items-center">
+  <div className=" w-1/3"><select className="select select-success w-full max-w-xs " onChange={(e)=>handleDisplayProduct(e.target.value)}>
   <option disabled selected   className='bg-transparent'>Select by catagory</option>
   <option value={"Atta & Flour"}>Atta & Flour</option>
   <option value={"Dhall"}>Dhall</option>
@@ -51,15 +52,15 @@ function Product() {
   <option value={"Tea & Beverages"}>Tea & Beverages</option>
   
 </select></div>
-    <div className="">Add Product</div>
+    <div className="w-1/3 text-center">Add Product</div>
     
-    <div className="btn btn-outline btn-success " ><Link to="/createproduct">Create Product</Link></div>
+    <div className="btn btn-outline btn-success w-1/3 " ><Link to="/createproduct">Create Product</Link></div>
   </div>
-  <div className="">OR</div>
-  <div className=" mx-auto">
-  <i className="fa-solid fa-rotate-right text-2xl  text-white " onClick={()=>reloadPage()}></i>
+ 
+  <div className=" w-full text-center  ">
+  <i className="fa-solid fa-rotate-right text-2xl  text-black " onClick={()=>reloadPage()}></i>
   </div>
-  <div className="  h-auto  bg-gray-600  text-orange-300 rounded-box place-items-center">
+  <div className="  sm:w-auto   text-orange-300 rounded-box place-items-center">
     
     <Table data={data} />
     

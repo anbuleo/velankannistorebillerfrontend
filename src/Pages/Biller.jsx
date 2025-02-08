@@ -1,9 +1,9 @@
 import React from 'react'
 
 function Biller() {
-  return (
-    <div>Biller</div>
-  )
+  return <>
+  
+  </>
 }
 
 export default Biller

@@ -52,8 +52,8 @@ let ele = data
 
   // console.log(product)
   return <>
-    <div className="">
-  <table className="table static">
+    <div className="w-full">
+  <table className="table   bg-gray-600">
     {/* head */}
     <thead className='text-orange-200 text-xl'>
       <tr>
@@ -62,6 +62,7 @@ let ele = data
         <th>Price</th>
         <th>Stock</th>
         <th>generateBarcode</th>
+        <th>MRP</th>
         <th>Edit</th>
 
       </tr>
@@ -75,6 +76,7 @@ let ele = data
         <td>{e.unitValue}{e.qantityType}={e.productPrice}₹</td>
         <td>{e.stockQuantity}</td>
         <td>{e.productCode}</td>
+        <td>{e.MRP}</td>
         <td className='flex gap-4 cursor-pointer '><i className="fa-solid fa-pen-to-square text-green-400"  onClick={()=>navigate(`/editproduct/${e._id}`)} ></i> <i className="fa-solid  fa-trash text-red-400" onClick={()=>handleDeleteProduct(e._id)}></i></td>
       </tr>
      
@@ -87,6 +89,7 @@ let ele = data
         <td>{e.unitValue}{e.qantityType}={e.productPrice}₹</td>
         <td>{e.stockQuantity}</td>
         <td>{e.productCode}</td>
+        <td>{e.MRP}</td>
         <td className='flex gap-4 cursor-pointer '><i className="fa-solid fa-pen-to-square text-green-400"  onClick={()=>navigate(`/editproduct/${e._id}`)} ></i> <i className="fa-solid  fa-trash text-red-400" onClick={()=>handleDeleteProduct(e._id)}></i></td>
       </tr>
      

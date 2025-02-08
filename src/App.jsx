@@ -13,6 +13,10 @@ import EditProduct from './Pages/EditProduct'
 import BarCodeContext from './Context/BarCodeContext'
 import CreateCoustomer from './Pages/CreateCoustomer'
 import InstaBiller from './Pages/InstaBiller'
+import Sale from './Pages/Sale'
+import Customer from './Pages/Customer'
+import BalanceCreate from './Pages/BalanceCreate'
+import BarCodePrinter from './Pages/BarCodePrinter'
 
 
 function App() {
@@ -28,6 +32,10 @@ function App() {
         <Route path='/' element={<SignIn />} />
         <Route  path='*' element={<Navigate to='/' />}/>
         <Route path='/home' element={<ProtectedRoute><AuthContext><Nav/><Home/> <Footer /></AuthContext></ProtectedRoute>}/>
+        <Route path='/barcodeprint' element={<ProtectedRoute><AuthContext><Nav/><BarCodePrinter/> <Footer /></AuthContext></ProtectedRoute>}/>
+        <Route path='/customer' element={<ProtectedRoute><AuthContext><Nav/><Customer/> <Footer /></AuthContext></ProtectedRoute>}/>
+        <Route path='/createbalancesheet' element={<ProtectedRoute><AuthContext><Nav/><BalanceCreate/> <Footer /></AuthContext></ProtectedRoute>}/>
+        <Route path='/sale' element={<ProtectedRoute><AuthContext><Nav/><Sale/> <Footer /></AuthContext></ProtectedRoute>}/>
         <Route path='/product' element={<ProtectedRoute><AuthContext><Nav/><Product /></AuthContext></ProtectedRoute>}/>
         <Route path='/createproduct' element={<CreateProduct />} />
         <Route path='/addbarcode' element={<AddBarCode />}/>

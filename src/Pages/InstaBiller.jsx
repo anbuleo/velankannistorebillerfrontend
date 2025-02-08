@@ -14,6 +14,7 @@ import PrintItems from '../components/PrintItems';
 
 function InstaBiller(){
     let [customerSelect, setCustomerSelect] = useState('customer')
+    let [paymentType,setPaymentType] = useState('cash')
     let [isOnline,setIsOnline] = useState(false)
     let [searchInput,setSearchInput] = useState('')
     const [time,setTime] = useState("")
@@ -26,7 +27,7 @@ function InstaBiller(){
   let {customer} = useSelector((state)=>state.customer)
   const contentRef =useRef(null);
   // let {totalPriceInCart} = useSelector((state)=>state.totalPriceInCart)
-  let {getCustomer} = genrateBill()
+  let {getCustomer,createBill} = genrateBill()
 
     let dispatch = useDispatch()
     function formatAMPM(date) {
@@ -60,7 +61,9 @@ let yyyy = today.getFullYear();
     }
   }
   const hamdleChangePaymentType = (e)=>{
+    setPaymentType(e)
       if(e !== 'online'){
+        
         setIsOnline(false)
         return
       }
@@ -278,7 +281,7 @@ let yyyy = today.getFullYear();
       </table>
     </div>
     <div className="flex justify-around p-4">
-      <div className="btn">save</div>
+      <div className="btn" onClick={()=>createBill(paymentType,cart,totalPriceInCart,customeronecart)}>save</div>
       <div className="btn" onClick={()=>setTime(formatAMPM(new Date))}>
         <button className="btn" onClick={()=>document.getElementById('my_modal_3').showModal()}>Print Estimate</button>
 <dialog id="my_modal_3" className="modal">
@@ -296,7 +299,8 @@ let yyyy = today.getFullYear();
   </div>
 </dialog>
 </div>
-      <div className="btn" onClick={()=>dispatch(resetCart())}>save & print</div>
+      <div className="btn" onClick={()=>{createBill(paymentType,cart,totalPriceInCart,customeronecart);handleEstimatePrint()}}>save & print</div>
+      <div className="btn btn-error btn-outline" onClick={()=>dispatch(resetCart())}>delete</div>
     </div>
      
             

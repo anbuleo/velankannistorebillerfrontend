@@ -23,13 +23,13 @@ function Nav() {
       <h1 className='text-center text-xl mb-20'>CB Store Assitant</h1>
       {data && data.role ==='admin' ?<><li className='liAside'><Link to={'/home'}>Home</Link></li>
       <li className='liAside'><Link to={'/product'}>Product</Link></li>
-      <li className='liAside'><Link to={'/'}>Sales</Link></li>
-      <li className='liAside'><Link to={'/'}>Approval</Link></li>
-      <li className='liAside'><Link to={'/'}>Team</Link></li>
+      <li className='liAside'><Link to={'/sale'}>Sales</Link></li>
+      <li className='liAside'><Link to={'/customer'}>Customer BS</Link></li>
+      <li className='liAside'><Link to={'/createbalancesheet'}>Customize BS</Link></li>
       <li className='liAside'><Link to={'/instabiller'}>InstaBiller</Link></li>
-      <li className='liAside'><Link to={'/'}>Biller</Link></li>
+      <li className='liAside'><Link to={'/home'}>Biller</Link></li>
       <li className='liAside'><Link to={'/createcustomer'}>CreateCustomer</Link></li>
-      <li className='liAside'><Link to={'/'}>BarcodePrint</Link></li><li className='btn btn-error  text-orange-200'><p onClick={()=>{
+      <li className='liAside'><Link to={'/barcodeprint'}>BarcodePrint</Link></li><li className='btn btn-error  text-orange-200'><p onClick={()=>{
         sessionStorage.clear()
         localStorage.clear()
         navigate('/')
