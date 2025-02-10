@@ -17,6 +17,9 @@ import Sale from './Pages/Sale'
 import Customer from './Pages/Customer'
 import BalanceCreate from './Pages/BalanceCreate'
 import BarCodePrinter from './Pages/BarCodePrinter'
+import AdminControl from './common/AdminControl'
+import User from './Pages/User'
+import EditUser from './Pages/EditUser'
 
 
 function App() {
@@ -34,12 +37,14 @@ function App() {
         <Route path='/home' element={<ProtectedRoute><AuthContext><Nav/><Home/> <Footer /></AuthContext></ProtectedRoute>}/>
         <Route path='/barcodeprint' element={<ProtectedRoute><AuthContext><Nav/><BarCodePrinter/> <Footer /></AuthContext></ProtectedRoute>}/>
         <Route path='/customer' element={<ProtectedRoute><AuthContext><Nav/><Customer/> <Footer /></AuthContext></ProtectedRoute>}/>
-        <Route path='/createbalancesheet' element={<ProtectedRoute><AuthContext><Nav/><BalanceCreate/> <Footer /></AuthContext></ProtectedRoute>}/>
+        <Route path='/createbalancesheet' element={<ProtectedRoute><AdminControl><AuthContext><Nav/><BalanceCreate/> <Footer /></AuthContext></AdminControl></ProtectedRoute>}/>
         <Route path='/sale' element={<ProtectedRoute><AuthContext><Nav/><Sale/> <Footer /></AuthContext></ProtectedRoute>}/>
+        <Route path='/user' element={<ProtectedRoute><AuthContext><Nav/><User/> <Footer /></AuthContext></ProtectedRoute>}/>
+        <Route path='/edituser/:id' element={<ProtectedRoute><AuthContext><Nav/><EditUser/> <Footer /></AuthContext></ProtectedRoute>}/>
         <Route path='/product' element={<ProtectedRoute><AuthContext><Nav/><Product /></AuthContext></ProtectedRoute>}/>
-        <Route path='/createproduct' element={<CreateProduct />} />
+        <Route path='/createproduct' element={<ProtectedRoute><AdminControl><AuthContext><Nav/><CreateProduct/> <Footer /></AuthContext></AdminControl></ProtectedRoute>} />
         <Route path='/addbarcode' element={<AddBarCode />}/>
-        <Route path='/editproduct/:id' element={<EditProduct />}/>
+        <Route path='/editproduct/:id' element={<ProtectedRoute><AdminControl><AuthContext><Nav/><EditProduct/> <Footer /></AuthContext></AdminControl></ProtectedRoute>}/>
         <Route path='/createcustomer' element={<CreateCoustomer />} />
         <Route path='/instabiller'  element={<ProtectedRoute><AuthContext><Nav/><InstaBiller /></AuthContext></ProtectedRoute>}/>
       </Routes>

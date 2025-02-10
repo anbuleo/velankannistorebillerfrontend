@@ -47,20 +47,3 @@ body{
 }
 
 
-@media print {
-  body * {
-    visibility: hidden;
-  }
-  
-  /* Only show necessary content for printing */
-  .printable, svg, svg * {
-    visibility: visible;
-  }
-
-  /* Position the printed content properly */
-  svg {
-    position: absolute;
-    top: 0;
-    left: 0;
-  }
-}

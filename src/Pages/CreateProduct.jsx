@@ -48,13 +48,13 @@ function CreateProduct() {
     }
 
   return <>
-  <div className=" flex justify-end p-4">
+  <div className=" flex justify-end p-4 pt-20">
    
     <div className="btn btn-warning btn-outline"><Link to={'/product'}>{`<-- Back`}</Link></div>
   </div>
   <div className="h-screen place-content-center w-screen ">
     
-    <div className="w-full max-w-lg p-4  mx-auto  bg-transparent backdrop-blur-xl text-white  opacity-95 border border-zinc-950  rounded-lg shadow sm:p-6 md:p-8 dark:bg-gray-800 dark:border-gray-700 ">
+    <div className="w-full max-w-lg p-4  mx-auto  text-white  opacity-95 border border-zinc-950  rounded-lg shadow sm:p-6 md:p-8 dark:bg-gray-800 dark:border-gray-700 ">
         <div className="heading">
           <h1 className='text-center text-xl'>Create Product</h1>
         </div>

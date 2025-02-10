@@ -10,6 +10,8 @@ import { GrFormSubtract,GrFormAdd  } from "react-icons/gr";
 import genrateBill from '../Hooks/genrateBill';
 import {useReactToPrint} from 'react-to-print'
 import PrintItems from '../components/PrintItems';
+import { PDFDownloadLink } from '@react-pdf/renderer';
+import BillPDF from '../components/BillPdf';
  
 
 function InstaBiller(){
@@ -20,12 +22,18 @@ function InstaBiller(){
     const [time,setTime] = useState("")
     let appUserName = `${import.meta.env.VITE_APPUSER_NAME}`
     let [tableData,setTableData] = useState([])
+    let [isAdmin,setIsAdmin] = useState(false)
     let {product} = useSelector((state)=>state.product)
     let {cart,totalPriceInCart,customeronecart} = useSelector((state)=>state.cart)
     // let [ customerBillAddress,setCustomerBillAddress] = useState(customeronecart)
 // console.log(appUserName)
   let {customer} = useSelector((state)=>state.customer)
   const contentRef =useRef(null);
+
+
+  let data = JSON.parse(localStorage?.getItem('data'))
+
+  
   // let {totalPriceInCart} = useSelector((state)=>state.totalPriceInCart)
   let {getCustomer,createBill} = genrateBill()
 
@@ -48,7 +56,11 @@ let yyyy = today.getFullYear();
 
   today= dd + '/' + mm + '/' + yyyy
    
-  useEffect(( )=>{  },[tableData]) 
+  useEffect(( )=>{ if(data && data.role !== 'admin'){
+    setIsAdmin(true)
+  }else{
+    setIsAdmin(false)
+  } },[tableData]) 
 
   
   // console.log(customer)
@@ -80,7 +92,7 @@ let yyyy = today.getFullYear();
       toast.error('error occurs')
     }
   }
-  // console.log(cart)
+  console.log(cart)
   const addProductBilling = (data) => {
     // console.log(data)
     try {
@@ -94,7 +106,8 @@ let yyyy = today.getFullYear();
             productBarcode: data.productBarcode,
             qantityType:data.qantityType,
             productId: data._id,
-            MRP:data.MRP
+            MRP:data.MRP,
+            MinCost:data.productCost
       }
       dispatch(addProductToCart(payload))
      setTableData([])
@@ -134,7 +147,8 @@ let yyyy = today.getFullYear();
         productBarcode: isCode?.productBarcode,
         qantityType:isCode?.qantityType,
         productId: isCode?._id,
-        MRP:isCode?.MRP
+        MRP:isCode?.MRP,
+        MinCost:isCode?.productCost
   }
   // console.log(code,'code')
  
@@ -153,7 +167,8 @@ let yyyy = today.getFullYear();
         productBarcode: barcodeproductBarcode,
         qantityType:barcodeqantityType,
         productId: barcode._id,
-        MRP:barcode?.MRP
+        MRP:barcode?.MRP,
+        MinCost:barcode?.productCost
   }
   dispatch(addProductToCart(payload))
   setSearchInput('')
@@ -200,7 +215,13 @@ let yyyy = today.getFullYear();
  </div>
  <div className="pt-5">
  <div className=""><h1 className="text-center uppercase text-2xl underline text-white">{appUserName}</h1></div>
-   <div className=""></div>
+   <div className="">
+   {/* <div className="flex justify-between mb-4">
+        <PDFDownloadLink document={<BillPDF cart={cart} totalPrice={totalPriceInCart} today={today} companyName={appUserName} />} fileName="bill.pdf">
+          {({ loading }) => (loading ? "Loading..." : <button className="btn btn-primary">Download PDF</button>)}
+        </PDFDownloadLink>
+      </div> */}
+   </div>
    <div className=""></div>
    
  </div>
@@ -250,6 +271,7 @@ let yyyy = today.getFullYear();
           <tr>
               <td>Item no</td>
               <td>product name</td>
+              <td>MRP</td>
               <td>product per price</td>
               <td>product qty</td>
               <td>Amount</td>
@@ -263,9 +285,10 @@ let yyyy = today.getFullYear();
                 <td className="">{i+1}</td>
                 <td className="">{e.productName}  {e.productUnit } {e.qantityType}
                 </td>
-                <td className=""><input defaultValue={e.productPrice} type='text' className='input    input-xs	 max-w-xs text-center bg-transparent' onChange={(s)=>handleChangePrice(e.productId,s.target.value)} /></td>
+                <td>{e.MRP}</td>
+                <td className=""><input defaultValue={e.productPrice} disabled={isAdmin} type='number' className='input    input-xs	 max-w-xs text-center bg-transparent' onChange={(s)=>handleChangePrice(e.productId,s.target.value)} /></td>
                 {e.qantityType === "Kg"? (<td className="flex justify-center gap-3 items-center">
-                <input type="number" placeholder='1.00'  step="any" defaultValue={e.productQuantity} onChange={(s)=>handleChangeQtyK(e.productId,s.target.value)}/></td>) :(<td className="flex justify-center gap-3 items-center">
+                <input type="number" placeholder='1.00'   step="any" defaultValue={e.productQuantity} onChange={(s)=>handleChangeQtyK(e.productId,s.target.value)}/></td>) :(<td className="flex justify-center gap-3 items-center">
               <GrFormSubtract className='hover:bg-slate-200 rounded cursor-pointer  ' onClick={()=>dispatch(lessoneproduct(e.productId))} /><div className="">{e.productQuantity}</div> <GrFormAdd className='hover:bg-slate-200 rounded cursor-pointer  ' onClick={()=>dispatch(addProductOne(e.productId))}/>
                   </td>)
                 }
