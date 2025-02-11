@@ -7,7 +7,7 @@ function AdminControl({children}) {
      let data = JSON.parse(datas)
     let con1 = data.status == 'approved'
     let condition = data.role == 'admin'
-    console.log(data)
+    // console.log(data)
     if(!condition) {
         toast.warning('Admin only')
     }

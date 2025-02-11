@@ -26,6 +26,10 @@ function SaleTableDataHook() {
         }
     }
     let handleDelete = async(id)=>{
+        let datas = localStorage.getItem('data')
+        let data = JSON.parse(datas)
+        
+        if(data.role !=='admin' ) return toast.warning('Admin only delete Sale bill')
         try {
             let res = await AxiosService.delete(`/saleprint/deletebyid/${id}`)
             if(res.status == 200){

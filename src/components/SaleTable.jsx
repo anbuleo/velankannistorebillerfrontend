@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import useSaleTableDataHook from '../Hooks/SaleTableDataHook'
+import { toast } from 'react-toastify'
 
 function SaleTable({props}) {
     let {tableData} = props
@@ -9,6 +10,30 @@ function SaleTable({props}) {
     // console.log(tableData)
     let navigate = useNavigate()
     // console.log(tableData)
+    useEffect(()=>{
+        let data = calculateSale(tableData)
+       if(data){
+        toast.info(`sale Code ${data}`)
+       }
+    },[tableData])
+    
+    let calculateSale = (data)=>{
+        let totalAmount 
+        let totalCost
+
+        if(!data && data.length < 0) return
+        totalAmount= data?.reduce((acc,curr)=>{
+            let total = curr.products.reduce((sum,product)=>sum + Number(product.productTotal),0)
+            return acc + total
+        },0)
+        totalCost= data?.reduce((acc,curr)=>{
+            let total = curr.products.reduce((sum,product)=>sum + (Number(product.MinCost) * Number(product.productQuantity)),0)
+            return acc + total
+        },0)
+        // console.log(data,totalAmount,totalCost)
+        return totalCost
+    }
+    // calculateSale(tableData)
 
 
   return <>

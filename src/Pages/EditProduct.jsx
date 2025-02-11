@@ -77,7 +77,7 @@ function CreateProduct() {
   </div>
   <div className="h-screen place-content-center w-screen ">
     
-    <div className="w-full max-w-lg p-4  mx-auto  bg-transparent backdrop-blur-xl text-white  opacity-95 border border-zinc-950  rounded-lg shadow sm:p-6 md:p-8 dark:bg-gray-800 dark:border-gray-700 ">
+    <div className="w-full max-w-lg p-4  mx-auto  bg-slate-500 backdrop-blur-xl text-white  opacity-95 border border-zinc-950  rounded-lg shadow sm:p-6 md:p-8 dark:bg-gray-800 dark:border-gray-700 ">
         <div className="heading">
           <h1 className='text-center text-xl'>Create Product</h1>
         </div>
@@ -215,7 +215,7 @@ function CreateProduct() {
     
               
                 <div className="flex-none">
-                <button className='mt-4 btn btn-outline w-full bg-slate-600 ' type='submit'>
+                <button className='mt-4 btn btn-outline w-full bg-slate-200 ' type='submit'>
                 {loading?<span className="loading loading-dots loading-lg"></span>:'Submit'}
               </button>
                 </div>
@@ -225,7 +225,7 @@ function CreateProduct() {
         </Formik>
         </div>
         
-        <div className="mt-4 text-sm text-right"><p>Doesn't have an account? <span className='cursor-pointer text-blue-700 text-xl'><Link to={'/signup'}>Sign Up</Link></span> </p></div>
+        
     </div>
   </div>
   </>

@@ -23,12 +23,13 @@ function CreateCoustomer() {
     }
   }
   return <div className='h-screen'>
-           {loading ? <div className="place-content-center mx-auto"><span className="loading loading-bars loading-lg"></span></div>:<> <div className="  text-2xl bg-transparent backdrop-blur-xl text-orange-300   opacity-95 border border-zinc-950  rounded-lg shadow sm:p-6 md:p-8 dark:bg-gray-800 dark:border-gray-700">
+           {loading ? <div className="place-content-center mx-auto"><span className="loading loading-bars loading-lg"></span></div>:<> <div className="  text-2xl bg-slate-500 backdrop-blur-xl text-orange-300   opacity-95 border border-zinc-950  rounded-lg shadow sm:p-6 md:p-8 dark:bg-gray-800 dark:border-gray-700 ">
               <p className="text-center ">Create Customer </p>
-              <p className="btn btn-info btn-outline float-right" onClick={()=>navigate('/home')}>{'<--- back'}</p>
+             
             </div>
-            <div className="divider divider-warning"></div>
-            <div className="bg-transparent backdrop-blur-xl text-orange-300 w-2/4 mx-auto  opacity-95 border border-warning  rounded-lg shadow sm:p-6 md:p-8 dark:bg-gray-800 dark:border-gray-700">
+            <div className="divider divider-success"></div>
+            <p className="btn  border-t-indigo-500 hover:bg-indigo-500 btn-outline float-right" onClick={()=>navigate('/home')}>{'<--- back'}</p>
+            <div className="bg-transparent bg-slate-500 backdrop-blur-xl text-orange-300 w-2/4 mx-auto  opacity-95 border border-warning  rounded-lg shadow sm:p-6 md:p-8 dark:bg-gray-800 dark:border-gray-700">
               <Formik
                   initialValues={{
                     name : "",

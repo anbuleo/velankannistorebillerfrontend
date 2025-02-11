@@ -1,8 +1,8 @@
 import React from 'react'
 
 function Pending({data}) {
-  return <><div className="h-screen  place-content-center w-screen">
-  <div className="card w-96 glass mx-auto text-orange-200">
+  return <><div className="h-screen  place-content-center w-screen " >
+  <div className="card w-96 glass mx-auto text-orange-200 bg-indigo-800">
   <div className='card-body items-center '><p className='text-2xl'> Welcome <span className='text-orange-600 uppercase'>{data?.userName}</span></p></div>
   <div className="card-body items-center text-center">
     <h2 className="card-title">Wait for Approval</h2>

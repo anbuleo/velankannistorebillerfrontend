@@ -39,13 +39,13 @@ function App() {
         <Route path='/customer' element={<ProtectedRoute><AuthContext><Nav/><Customer/> <Footer /></AuthContext></ProtectedRoute>}/>
         <Route path='/createbalancesheet' element={<ProtectedRoute><AdminControl><AuthContext><Nav/><BalanceCreate/> <Footer /></AuthContext></AdminControl></ProtectedRoute>}/>
         <Route path='/sale' element={<ProtectedRoute><AuthContext><Nav/><Sale/> <Footer /></AuthContext></ProtectedRoute>}/>
-        <Route path='/user' element={<ProtectedRoute><AuthContext><Nav/><User/> <Footer /></AuthContext></ProtectedRoute>}/>
-        <Route path='/edituser/:id' element={<ProtectedRoute><AuthContext><Nav/><EditUser/> <Footer /></AuthContext></ProtectedRoute>}/>
+        <Route path='/user' element={<ProtectedRoute><AuthContext><AdminControl><Nav/><User/> <Footer /></AdminControl></AuthContext></ProtectedRoute>}/>
+        <Route path='/edituser/:id' element={<ProtectedRoute><AuthContext><AdminControl><Nav/><EditUser/> <Footer /></AdminControl></AuthContext></ProtectedRoute>}/>
         <Route path='/product' element={<ProtectedRoute><AuthContext><Nav/><Product /></AuthContext></ProtectedRoute>}/>
         <Route path='/createproduct' element={<ProtectedRoute><AdminControl><AuthContext><Nav/><CreateProduct/> <Footer /></AuthContext></AdminControl></ProtectedRoute>} />
-        <Route path='/addbarcode' element={<AddBarCode />}/>
+        {/* <Route path='/addbarcode' element={<AddBarCode />}/> */}
         <Route path='/editproduct/:id' element={<ProtectedRoute><AdminControl><AuthContext><Nav/><EditProduct/> <Footer /></AuthContext></AdminControl></ProtectedRoute>}/>
-        <Route path='/createcustomer' element={<CreateCoustomer />} />
+        <Route path='/createcustomer' element={<ProtectedRoute><AuthContext><Nav/><CreateCoustomer/> <Footer /></AuthContext></ProtectedRoute>} />
         <Route path='/instabiller'  element={<ProtectedRoute><AuthContext><Nav/><InstaBiller /></AuthContext></ProtectedRoute>}/>
       </Routes>
      

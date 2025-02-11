@@ -60,7 +60,7 @@ function BarCodePrinter() {
   // }, [product]); 
 
   const handlePrint = (val)=>{
-    console.log(data)
+    // console.log(data)
     // const barcodeData = val.productCode;
       JsBarcode(barcodeRef.current, data, {
         format: "CODE128", // Barcode format (can be CODE39, EAN13, etc.)
@@ -108,34 +108,8 @@ function BarCodePrinter() {
   return <>
    
    <div className="w-full pt-20">
-   <div className='printable '  >
-        {/* This is the part that gets printed */}
-        <div className="">
-          
-           
-            
-              <div className="w-1/2"><svg ref={barcodeRef} ></svg></div>
-            
-        </div>
-        <div className="">
-          
-           
-            
-              <div className="w-1/2"><svg ref={barcodeRef} ></svg></div>
-            
-        </div>
-        <div className="">
-          
-           
-            
-              <div className="w-1/2"><svg ref={barcodeRef} ></svg></div>
-            
-        </div>
-        
-        
-        
-      </div>
-      <div className="flex items-center justify-center h-screen bg-gray-100">
+   
+      <div className="flex items-center justify-center  h-screen">
       <div className="bg-white p-6 rounded-2xl shadow-lg w-80 text-center">
         <h2 className="text-xl font-semibold mb-4">Select Options</h2>
         
@@ -162,7 +136,7 @@ function BarCodePrinter() {
       
     </div>
     <div className="">
-    <PrintBarCode props={{data,count,barImg,contentRef,name,mrp}} />
+   {barImg && <PrintBarCode props={{data,count,barImg,contentRef,name,mrp}} />} 
     </div>
 </div>
   </>

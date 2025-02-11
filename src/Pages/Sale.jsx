@@ -45,7 +45,7 @@ function Sale() {
             await getBillOfuser(id)
             setTableData(customerBill)
             setTimeout(() => { 
-                console.log("Updated customerBill:", customerBill);
+                // console.log("Updated customerBill:", customerBill);
                 setTableData([...customerBill]); 
             }, 100); 
         }

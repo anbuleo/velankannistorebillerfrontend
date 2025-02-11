@@ -92,7 +92,7 @@ let yyyy = today.getFullYear();
       toast.error('error occurs')
     }
   }
-  console.log(cart)
+  // console.log(cart)
   const addProductBilling = (data) => {
     // console.log(data)
     try {

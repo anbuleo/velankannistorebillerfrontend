@@ -32,6 +32,9 @@ let ele = data
 
   const handleDeleteProduct  = async (id) =>{
     try {
+      let datas = localStorage.getItem('data')
+      let data = JSON.parse(datas)
+      if(data.role !=='admin' ) return toast.warning('Admin only delete Sale bill')
       let res =await AxiosService.delete(`/product/deleteproduct/${id}`)
       // console.log(res.status)
       if(res.status === 200){
@@ -48,6 +51,14 @@ let ele = data
       console.log(error)
       toast.error('Error Occurrs')
     }
+  }
+
+  const handleEditProduct = (id)=>{
+    let datas = localStorage.getItem('data')
+      let data = JSON.parse(datas)
+      if(data.role !=='admin' ) return toast.warning('Admin only delete Sale bill')
+        navigate(`/editproduct/${id}`)
+
   }
 
   // console.log(product)
@@ -77,7 +88,7 @@ let ele = data
         <td>{e.stockQuantity}</td>
         <td>{e.productCode}</td>
         <td>{e.MRP}</td>
-        <td className='flex gap-4 cursor-pointer '><i className="fa-solid fa-pen-to-square text-green-400"  onClick={()=>navigate(`/editproduct/${e._id}`)} ></i> <i className="fa-solid  fa-trash text-red-400" onClick={()=>handleDeleteProduct(e._id)}></i></td>
+        <td className='flex gap-4 cursor-pointer '><i className="fa-solid fa-pen-to-square text-green-400"  onClick={()=>handleEditProduct(e._id)} ></i> <i className="fa-solid  fa-trash text-red-400" onClick={()=>handleDeleteProduct(e._id)}></i></td>
       </tr>
      
       
@@ -90,7 +101,7 @@ let ele = data
         <td>{e.stockQuantity}</td>
         <td>{e.productCode}</td>
         <td>{e.MRP}</td>
-        <td className='flex gap-4 cursor-pointer '><i className="fa-solid fa-pen-to-square text-green-400"  onClick={()=>navigate(`/editproduct/${e._id}`)} ></i> <i className="fa-solid  fa-trash text-red-400" onClick={()=>handleDeleteProduct(e._id)}></i></td>
+        <td className='flex gap-4 cursor-pointer '><i className="fa-solid fa-pen-to-square text-green-400"  onClick={()=>handleEditProduct(e._id)} ></i> <i className="fa-solid  fa-trash text-red-400" onClick={()=>handleDeleteProduct(e._id)}></i></td>
       </tr>
      
       

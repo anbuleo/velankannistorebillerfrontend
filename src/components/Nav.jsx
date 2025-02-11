@@ -35,13 +35,13 @@ function Nav() {
         navigate('/')
       }}>Sign Out</p></li></>:data.role ==='saleman'&& data.status=='approved'?<>
       <li className='liAside'><Link to={'/home'}>Home</Link></li>
-      {/* <li className='liAside'><Link to={'/'}>Product</Link></li> */}
-      <li className='liAside'><Link to={'/'}>Sales</Link></li>
+      <li className='liAside'><Link to={'/product'}>Product</Link></li>
+      <li className='liAside'><Link to={'/sale'}>Sales</Link></li>
       {/* <li className='liAside'><Link to={'/'}>Approval</Link></li> */}
-      <li className='liAside'><Link to={'/'}>InstaBiller</Link></li>
-      <li className='liAside'><Link to={'/'}>Biller</Link></li>
-      <li className='liAside'><Link to={'/'}>CreateCustomer</Link></li>
-      <li className='liAside'><Link to={'/'}>BarcodePrint</Link></li>
+      <li className='liAside'><Link to={'/instabiller'}>InstaBiller</Link></li>
+      <li className='liAside'><Link to={'/createbalancesheet'}>Customize BS</Link></li>
+      <li className='liAside'><Link to={'/createcustomer'}>CreateCustomer</Link></li>
+      <li className='liAside'><Link to={'/barcodeprint'}>BarcodePrint</Link></li>
       <li className='btn btn-error  text-orange-200'><p onClick={()=>{
         sessionStorage.clear()
         localStorage.clear()

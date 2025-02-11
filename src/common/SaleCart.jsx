@@ -16,7 +16,7 @@ export const saleCart = createSlice({
     initialState,
     reducers:{
         addAllBills:(state,action)=>{
-            console.log(action.payload)
+            // console.log(action.payload)
             state.bills=  action.payload
             state.totalBllAmount = state.bills?.reduce((acc,cur)=>acc + Number(cur.totalAmount),0)
             state.totalCreditAmount = state.bills?.reduce((acc,cur)=>acc + Number(cur.dueAmount),0)
