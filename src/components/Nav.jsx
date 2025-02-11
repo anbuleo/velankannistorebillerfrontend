@@ -39,7 +39,7 @@ function Nav() {
       <li className='liAside'><Link to={'/sale'}>Sales</Link></li>
       {/* <li className='liAside'><Link to={'/'}>Approval</Link></li> */}
       <li className='liAside'><Link to={'/instabiller'}>InstaBiller</Link></li>
-      <li className='liAside'><Link to={'/createbalancesheet'}>Customize BS</Link></li>
+      <li className='liAside'><Link to={'/customer'}>customer</Link></li>
       <li className='liAside'><Link to={'/createcustomer'}>CreateCustomer</Link></li>
       <li className='liAside'><Link to={'/barcodeprint'}>BarcodePrint</Link></li>
       <li className='btn btn-error  text-orange-200'><p onClick={()=>{
