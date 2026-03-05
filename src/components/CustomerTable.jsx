@@ -1,169 +1,145 @@
 import React, { useState } from 'react'
-import {useSelector } from 'react-redux'
+import { useSelector } from 'react-redux'
 import jsPDF from "jspdf";
 import "jspdf-autotable";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
+import { MdPictureAsPdf, MdTableChart, MdVisibility, MdVisibilityOff } from 'react-icons/md'
 
-function CustomerTable() {
+function CustomerTable({ filteredData }) {
     const [expandedRows, setExpandedRows] = useState({});
-    let {balanceSheet,TotalBalance} = useSelector(state=>state.balancesheet)
-    const toggleExpand = (id) => {
-        setExpandedRows((prev) => ({ ...prev, [id]: !prev[id] }));
+    const { customer: allCustomers } = useSelector((state) => state.customer);
+    const displayList = filteredData || allCustomers;
+
+    const toggleRow = (id) => {
+        setExpandedRows(prev => ({ ...prev, [id]: !prev[id] }));
     };
 
     const exportToPDF = () => {
         const doc = new jsPDF();
-        doc.text("Customer Balance Sheet Report", 10, 10);
-
-        const tableColumn = ["Customer Name", "Opening Balance", "Total Purchases", "Total Payments", "Remaining Balance"];
-        const tableRows = [];
-
-        balanceSheet?.forEach(sheet => {
-            const rowData = [
-                sheet.customerId?.name || "Unknown",
-                `₹${sheet.openingBalance}`,
-                `₹${sheet.totalPurchases}`,
-                `₹${sheet.totalPayments}`,
-                `₹${sheet.remainingBalance}`
-            ];
-            tableRows.push(rowData);
-        });
-
-        doc.autoTable({
-            head: [tableColumn],
-            body: tableRows,
-            startY: 20
-        });
-
-        doc.save("BalanceSheet.pdf");
+        doc.text("Customer Directory", 14, 15);
+        const tableColumn = ["Name", "Mobile", "Aadhaar", "Location", "Balance"];
+        const tableRows = displayList.map((c) => [
+            c.name,
+            c.mobile,
+            c.Aadhaar,
+            c.location,
+            `Rs.${c.balance}`
+        ]);
+        doc.autoTable({ head: [tableColumn], body: tableRows, startY: 20 });
+        doc.save("Customer_Report.pdf");
     };
 
-    // 📌 Function to Export as Excel
     const exportToExcel = () => {
-        const ws = XLSX.utils.json_to_sheet(balanceSheet?.map(sheet => ({
-            "Customer Name": sheet.customerId?.name || "Unknown",
-            "Opening Balance": sheet.openingBalance,
-            "Total Purchases": sheet.totalPurchases,
-            "Total Payments": sheet.totalPayments,
-            "Remaining Balance": sheet.remainingBalance
+        const worksheet = XLSX.utils.json_to_sheet(displayList.map(c => ({
+            Name: c.name,
+            Mobile: c.mobile,
+            Aadhaar: c.Aadhaar,
+            Location: c.location,
+            Balance: c.balance
         })));
-
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, "Balance Sheet");
-
-        const excelBuffer = XLSX.write(wb, { bookType: "xlsx", type: "array" });
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, "Customers");
+        const excelBuffer = XLSX.write(workbook, { bookType: "xlsx", type: "array" });
         const data = new Blob([excelBuffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
-
-        saveAs(data, "BalanceSheet.xlsx");
+        saveAs(data, "Customer_Ledger.xlsx");
     };
-  return   <div>
-    <div className="">
-    <p>Total balance Remaining : {TotalBalance}</p>
-    <div className="flex justify-end gap-4 mb-4">
-                <button className="bg-green-500 text-white px-4 py-2 rounded" onClick={exportToExcel}>Export to Excel</button>
-                <button className="bg-red-500 text-white px-4 py-2 rounded" onClick={exportToPDF}>Export to PDF</button>
+
+    return (
+        <div className="space-y-6">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 glass-card p-6">
+                <div>
+                    <h3 className="font-display font-bold text-surface-900 leading-none">Export Controls</h3>
+                    <p className="text-[10px] text-surface-400 mt-1 uppercase tracking-widest font-bold">Download Directory State</p>
+                </div>
+                <div className="flex gap-3">
+                    <button className="btn btn-outline border-surface-200 bg-white hover:bg-surface-50 text-surface-600 rounded-xl gap-2 font-bold shadow-sm" onClick={exportToExcel}>
+                        <MdTableChart className="text-xl text-success" /> Export Excel
+                    </button>
+                    <button className="btn btn-outline border-surface-200 bg-white hover:bg-surface-50 text-surface-600 rounded-xl gap-2 font-bold shadow-sm" onClick={exportToPDF}>
+                        <MdPictureAsPdf className="text-xl text-error" /> Export PDF
+                    </button>
+                </div>
             </div>
-    </div>
-    <table className="table-auto w-full border-collapse border border-gray-300">
+
+            <div className="glass-card overflow-hidden">
+                <table className="premium-table">
                     <thead>
-                        <tr className="bg-gray-100">
-                            <th className="border px-4 py-2">#</th>
-                            <th className="border px-4 py-2">Customer Name</th>
-                            <th className="border px-4 py-2">Opening Balance</th>
-                            <th className="border px-4 py-2">Total Purchases</th>
-                            <th className="border px-4 py-2">Total Payments</th>
-                            <th className="border px-4 py-2">Remaining Balance</th>
-                            <th className="border px-4 py-2">Transactions</th>
+                        <tr>
+                            <th className="w-16 text-center">#</th>
+                            <th>Customer Identity</th>
+                            <th className="text-center">Reference</th>
+                            <th>Primary Location</th>
+                            <th className="text-right">Ledger Balance</th>
+                            <th className="text-center w-24">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {balanceSheet.length > 0 ? (
-                            balanceSheet.map((sheet, index) => (
-                                <React.Fragment key={index}>
-                                    <tr className="text-center border">
-                                        <td className="border px-4 py-2">{index + 1}</td>
-                                        <td className="border px-4 py-2">{sheet.customerId?.name || "Unknown"}</td>
-                                        <td className="border px-4 py-2">₹{sheet.openingBalance}</td>
-                                        <td className="border px-4 py-2">₹{sheet.totalPurchases}</td>
-                                        <td className="border px-4 py-2">₹{sheet.totalPayments}</td>
-                                        <td className="border px-4 py-2 font-bold">₹{sheet.remainingBalance}</td>
-                                        <td className="border px-4 py-2">
-                                            <button
-                                                className="bg-blue-500 text-white px-2 py-1 rounded"
-                                                onClick={() => toggleExpand(sheet._id)}
-                                            >
-                                                {expandedRows[sheet._id] ? "Hide" : "View"}
-                                            </button>
+                        {displayList && displayList.length > 0 ? displayList.map((c, i) => (
+                            <React.Fragment key={c._id}>
+                                <tr className="h-20 hover:bg-surface-50">
+                                    <td className="text-center text-surface-400 font-bold">{i + 1}</td>
+                                    <td>
+                                        <p className="font-bold text-surface-900 uppercase tracking-tight leading-none mb-1">{c.name}</p>
+                                        <p className="text-[10px] text-surface-400 tracking-widest font-bold uppercase">{c.mobile}</p>
+                                    </td>
+                                    <td className="text-center">
+                                        <span className="badge badge-outline border-surface-200 text-surface-400 font-medium text-[10px] uppercase tracking-wider px-2">
+                                            {c.Aadhaar || 'NO_ID'}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span className="text-xs font-medium text-surface-600 uppercase italic opacity-70">{c.location}</span>
+                                    </td>
+                                    <td className="text-right">
+                                        <span className={`text-xl font-display font-bold leading-none ${c.balance > 0 ? 'text-error' : 'text-success'}`}>
+                                            ₹{c.balance}
+                                        </span>
+                                    </td>
+                                    <td className="text-center">
+                                        <button
+                                            onClick={() => toggleRow(c._id)}
+                                            className="w-10 h-10 rounded-xl bg-surface-100 flex items-center justify-center hover:bg-surface-200 transition-colors mx-auto"
+                                        >
+                                            {expandedRows[c._id] ? <MdVisibilityOff className="text-surface-600" /> : <MdVisibility className="text-surface-600" />}
+                                        </button>
+                                    </td>
+                                </tr>
+                                {expandedRows[c._id] && (
+                                    <tr className="bg-surface-50 animate-in slide-in-from-top-4 duration-300">
+                                        <td colSpan={6} className="p-8">
+                                            <div className="flex flex-col md:flex-row gap-8">
+                                                <div className="flex-1 glass-card p-6 border-none bg-white">
+                                                    <h5 className="text-[10px] font-bold text-surface-400 uppercase tracking-widest mb-4">Detailed Profile</h5>
+                                                    <div className="grid grid-cols-2 gap-6">
+                                                        <div>
+                                                            <p className="text-[10px] font-bold text-surface-400 uppercase leading-none mb-1">Full Name</p>
+                                                            <p className="font-bold text-surface-900">{c.name}</p>
+                                                        </div>
+                                                        <div>
+                                                            <p className="text-[10px] font-bold text-surface-400 uppercase leading-none mb-1">Mobile Contact</p>
+                                                            <p className="font-bold text-surface-900">{c.mobile}</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div className="w-full md:w-64 glass-card p-6 border-none bg-primary/5 text-primary">
+                                                    <h5 className="text-[10px] font-bold text-primary-400 uppercase tracking-widest mb-4">Financial Overview</h5>
+                                                    <p className="text-[10px] font-bold uppercase leading-none mb-1 opacity-70">Current Outstanding</p>
+                                                    <p className="text-3xl font-display font-bold">₹{c.balance}</p>
+                                                </div>
+                                            </div>
                                         </td>
                                     </tr>
-                                    {expandedRows[sheet._id] && (
-                                        <tr>
-                                            <td colSpan="7" className="border p-4 bg-gray-100">
-                                                <h3 className="font-bold mb-2">Transactions</h3>
-                                                <table className="w-full border-collapse border border-gray-300">
-                                                    <thead>
-                                                        <tr className="bg-gray-200">
-                                                            <th className="border px-4 py-2">Date</th>
-                                                            <th className="border px-4 py-2">Type</th>
-                                                            <th className="border px-4 py-2">Amount</th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody>
-                                                        {sheet.transactions.length > 0 ? (
-                                                            sheet.transactions.map((txn, i) => (
-                                                                <tr key={i} className="text-center border">
-                                                                    <td className="border px-4 py-2">{new Date(txn.date).toLocaleDateString()}</td>
-                                                                    <td className={`border px-4 py-2 ${txn.type === 'payment' ? 'text-green-500' : 'text-red-500'}`}>
-                                                                        {txn.type.replace("_", " ").toUpperCase()}
-                                                                    </td>
-                                                                    <td className="border px-4 py-2">₹{txn.amount}</td>
-                                                                </tr>
-                                                            ))
-                                                        ) : (
-                                                            <tr>
-                                                                <td colSpan="3" className="text-center py-2">No Transactions Found</td>
-                                                            </tr>
-                                                        )}
-                                                    </tbody>
-                                                </table>
-                                            </td>
-                                        </tr>
-                                    )}
-                                </React.Fragment>
-                            ))
-                        ) : (
-                            <tr>
-                                <td colSpan="7" className="text-center py-4">No Balance Sheet Found</td>
-                            </tr>
+                                )}
+                            </React.Fragment>
+                        )) : (
+                            <tr><td colSpan={6} className="h-40 text-center text-surface-400 italic">No matches found for the current search filter.</td></tr>
                         )}
                     </tbody>
                 </table>
-
-         {/* <table className="table-auto w-full border-collapse border border-gray-300">
-                    <thead>
-                        <tr className="bg-gray-100">
-                            <th className="border px-4 py-2">Customer Name</th>
-                            <th className="border px-4 py-2">Opening Balance</th>
-                            <th className="border px-4 py-2">Total Purchases</th>
-                            <th className="border px-4 py-2">Total Payments</th>
-                            <th className="border px-4 py-2">Remaining Balance</th>
-                        </tr>
-                 </thead>
-                 <tbody>
-                    {balanceSheet && balanceSheet?.map((e,i)=>{
-                        return <tr key={i} className="text-center border">
-                        <td className="border px-4 py-2">{e.customerId?.name || "Unknown"}</td>
-                        <td className="border px-4 py-2">₹{e.openingBalance}</td>
-                        <td className="border px-4 py-2">₹{e.totalPurchases}</td>
-                        <td className="border px-4 py-2">₹{e.totalPayments}</td>
-                        <td className="border px-4 py-2 font-bold">₹{e.remainingBalance}</td>
-                    </tr>
-                    })}
-                 </tbody>
-        </table> */}
-    </div>
-  
+            </div>
+        </div>
+    );
 }
 
 export default CustomerTable

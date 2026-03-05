@@ -8,21 +8,22 @@ import { toast } from 'react-toastify'
 
 function useEditProduct() {
 
-    let [loading,setLoading] = useState(false)
+    let [loading, setLoading] = useState(false)
     let dispatch = useDispatch()
     let navigate = useNavigate()
-    const editProdduct = async(value,id) =>{
+    const editProduct = async (id, value) => {
         setLoading(true)
         try {
-            let res = await AxiosService.put(`/product/editproduct/${id}`,value)
+            let res = await AxiosService.put(`/product/editproduct/${id}`, value)
 
-            dispatch(editProductRedux(res.data))
-            toast.success(`${res.data.productName} is updated`)
-            navigate('/product')
-            // console.log(res.data)
+            const updatedProduct = res.data.product || res.data;
+            dispatch(editProductRedux(updatedProduct))
+            toast.success(`${updatedProduct.productName} is updated successfully`)
+            return res;
         } catch (error) {
-            toast('error occur')
-            console.log(error)
+            toast.error('Error occurred during product update')
+            console.error(error)
+            return null;
         } finally {
             setLoading(false)
         }
@@ -30,8 +31,8 @@ function useEditProduct() {
 
 
 
-  return  {loading,editProdduct}
-  
+    return { loading, editProduct }
+
 }
 
 export default useEditProduct

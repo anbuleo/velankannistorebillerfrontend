@@ -1,123 +1,204 @@
-import {createSlice} from '@reduxjs/toolkit' ; 
+import { createSlice } from '@reduxjs/toolkit';
 import { toast } from 'react-toastify';
 
-
+/**
+ * Senior Developer Note: 
+ * We use a factory function to ensure consistent object structure across rehydration 
+ * or when adding new tabs.
+ */
+const createDefaultBill = (id, name) => ({
+    id,
+    name: name || `Counter ${id}`,
+    cart: [],
+    totalPriceInCart: 0,
+    customeronecart: { name: 'Retail Guest' },
+});
 
 const initialState = {
-    cart: [],
-    totalPriceInCart:0 ,
-    customeronecart:{},
-    
+    activeBillId: 1,
+    bills: [createDefaultBill(1)],
 }
+
+/**
+ * Defensive utility to ensure state integrity.
+ * If redux-persist rehydrates invalid data (like a string), 
+ * we gracefully fallback to initialState.
+ */
+const validateState = (state) => {
+    if (!state || typeof state !== 'object' || !Array.isArray(state.bills)) {
+        return initialState;
+    }
+    return null;
+};
 
 export const cartSlice = createSlice({
-    name:"cart",
+    name: "cart",
     initialState,
-    reducers :{
-        addProductToCart : (state,action) => {
-            // console.log(action.payload)
-            let findProduct = state.cart.findIndex(t=>t.productId === action.payload.productId)
-            if(findProduct !== -1) {
-                state.cart[findProduct].productQuantity += 1
-                state.cart[findProduct].productTotal =state.cart[findProduct].productQuantity * state.cart[findProduct].productPrice
-                let sum = state.cart.reduce((acc,cur)=>acc+ Number(cur.productTotal) , 0)
-                // console.log(sum)
-                state.totalPriceInCart = sum
-            }else{
+    reducers: {
+        ensureActiveBill: (state) => {
+            const corrupted = validateState(state);
+            if (corrupted) return corrupted;
 
-                state.cart.push(action.payload)
-                let sum = state.cart.reduce((acc,cur)=> Number(acc)+ Number(cur.productTotal) , 0)
-                state.totalPriceInCart = sum
+            if (state.bills.length === 0) {
+                state.bills = [createDefaultBill(1)];
+                state.activeBillId = 1;
             }
         },
-        totalPrice :(state,action)=>{
-            let sum = state.cart.reduce((acc,cur)=>acc+ Number(cur.productTotal) , 0)
-            state.totalPriceInCart = sum
+        setActiveBill: (state, action) => {
+            const corrupted = validateState(state);
+            if (corrupted) return corrupted;
+            state.activeBillId = action.payload;
         },
-        removeProductFromCart : (state,action) => {
-            let id = action.payload
+        addBillTab: (state) => {
+            const corrupted = validateState(state);
+            if (corrupted) return corrupted;
 
-            let newCart = state.cart.filter((a,b)=>a.productId != id)
+            const nextId = state.bills.length > 0 ? Math.max(...state.bills.map(b => b.id)) + 1 : 1;
+            const newBill = createDefaultBill(nextId);
+            state.bills.push(newBill);
+            state.activeBillId = nextId;
+            toast.success(`New Billing Workspace: ${newBill.name}`);
+        },
+        removeBillTab: (state, action) => {
+            const corrupted = validateState(state);
+            if (corrupted) return corrupted;
 
-            state.cart = newCart
-            let sum = state.cart.reduce((acc,cur)=>acc+ Number(cur.productTotal) , 0)
-            state.totalPriceInCart = sum
-           
-    },
-    lessoneproduct :(state,action)=>{
-            let isProduct = state.cart.findIndex(t=>t.productId === action.payload)
-
-            if(isProduct !== -1 && state.cart[isProduct].productQuantity >1){
-                state.cart[isProduct].productQuantity -=1
-                state.cart[isProduct].productTotal =state.cart[isProduct].productQuantity * state.cart[isProduct].productPrice
-                let sum = state.cart.reduce((acc,cur)=>acc+ Number(cur.productTotal) , 0)
-                state.totalPriceInCart = sum
-
-            }else {
-                toast.warning('Min one Qty')
+            if (state.bills.length <= 1) {
+                toast.warning("Management rule: Cannot close the primary billing node.");
+                return;
             }
-        }
-    ,
-    addProductOne :(state,action)=>{
-            let isProduct = state.cart.findIndex(t=>t.productId === action.payload)
-
-            if(isProduct !== -1 ){
-                state.cart[isProduct].productQuantity +=1
-                state.cart[isProduct].productTotal =state.cart[isProduct].productQuantity * state.cart[isProduct].productPrice
-                let sum = state.cart.reduce((acc,cur)=>acc+ Number(cur.productTotal) , 0)
-                state.totalPriceInCart = sum
-
-            }else {
-                toast.warning('Product Not found')
+            const idToRemove = action.payload;
+            state.bills = state.bills.filter(b => b.id !== idToRemove);
+            if (state.activeBillId === idToRemove) {
+                state.activeBillId = state.bills[0].id;
             }
-        }
-        ,
-        customizeProductPrice : (state,action)=>{
-            let isProduct = state.cart.findIndex(t=>t.productId === action.payload.productId)
+            toast.info("Tab context cleared.");
+        },
+        addProductToCart: (state, action) => {
+            const corrupted = validateState(state);
+            if (corrupted) return corrupted;
 
-            if(isProduct != -1){
-                state.cart[isProduct].productPrice = Number(action.payload.customPrice)
-                state.cart[isProduct].productTotal =state.cart[isProduct].productQuantity * state.cart[isProduct].productPrice
-                let sum = state.cart.reduce((acc,cur)=>acc+ Number(cur.productTotal) , 0)
-                state.totalPriceInCart = sum
+            const bill = state.bills.find(b => b.id === state.activeBillId) || state.bills[0];
+            if (!bill) return;
+
+            let findProduct = bill.cart.findIndex(t => t.productId === action.payload.productId)
+            if (findProduct !== -1) {
+                bill.cart[findProduct].productQuantity += 1
+                bill.cart[findProduct].productTotal = Number(bill.cart[findProduct].productQuantity) * Number(bill.cart[findProduct].productPrice)
+            } else {
+                const newItem = {
+                    ...action.payload,
+                    productQuantity: 1,
+                    productTotal: Number(action.payload.productPrice)
+                }
+                bill.cart.push(newItem)
+            }
+            bill.totalPriceInCart = Math.ceil(bill.cart.reduce((acc, cur) => acc + Number(cur.productTotal), 0))
+        },
+        removeProductFromCart: (state, action) => {
+            const corrupted = validateState(state);
+            if (corrupted) return corrupted;
+
+            const bill = state.bills.find(b => b.id === state.activeBillId);
+            if (!bill) return;
+
+            bill.cart = bill.cart.filter((a) => a.productId != action.payload)
+            bill.totalPriceInCart = Math.ceil(bill.cart.reduce((acc, cur) => acc + Number(cur.productTotal), 0))
+        },
+        lessoneproduct: (state, action) => {
+            const corrupted = validateState(state);
+            if (corrupted) return corrupted;
+
+            const bill = state.bills.find(b => b.id === state.activeBillId);
+            if (!bill) return;
+
+            let idx = bill.cart.findIndex(t => t.productId === action.payload)
+            if (idx !== -1 && bill.cart[idx].productQuantity > 1) {
+                bill.cart[idx].productQuantity -= 1
+                bill.cart[idx].productTotal = bill.cart[idx].productQuantity * bill.cart[idx].productPrice
+                bill.totalPriceInCart = Math.ceil(bill.cart.reduce((acc, cur) => acc + Number(cur.productTotal), 0))
             }
         },
-        addCustomerBillOne : (state,action)=>{
-            // console.log(action.payload)
-            // state.customeronecart = []
-            state.customeronecart = action.payload
+        addProductOne: (state, action) => {
+            const corrupted = validateState(state);
+            if (corrupted) return corrupted;
+
+            const bill = state.bills.find(b => b.id === state.activeBillId);
+            if (!bill) return;
+
+            let idx = bill.cart.findIndex(t => t.productId === action.payload)
+            if (idx !== -1) {
+                bill.cart[idx].productQuantity += 1
+                bill.cart[idx].productTotal = bill.cart[idx].productQuantity * bill.cart[idx].productPrice
+                bill.totalPriceInCart = Math.ceil(bill.cart.reduce((acc, cur) => acc + Number(cur.productTotal), 0))
+            }
         },
-        deleCustomerBillOne : (state,action)=>{
-            // console.log('a')
-            state.customeronecart ={}
+        customizeProductPrice: (state, action) => {
+            const corrupted = validateState(state);
+            if (corrupted) return corrupted;
+
+            const bill = state.bills.find(b => b.id === state.activeBillId);
+            if (!bill) return;
+
+            let idx = bill.cart.findIndex(t => t.productId === action.payload.productId)
+            if (idx != -1) {
+                bill.cart[idx].productPrice = Number(action.payload.customPrice)
+                bill.cart[idx].productTotal = bill.cart[idx].productQuantity * bill.cart[idx].productPrice
+                bill.totalPriceInCart = Math.ceil(bill.cart.reduce((acc, cur) => acc + Number(cur.productTotal), 0))
+            }
         },
-        handleChangeInKGQty :(state,action)=>{
-            console.log(action.payload)
-            let isProduct = state.cart.findIndex(t=>t.productId === action.payload.productId)
+        addCustomerBillOne: (state, action) => {
+            const corrupted = validateState(state);
+            if (corrupted) return corrupted;
+
+            const bill = state.bills.find(b => b.id === state.activeBillId) || state.bills[0];
+            if (bill) bill.customeronecart = action.payload;
+        },
+        handleChangeInKGQty: (state, action) => {
+            const corrupted = validateState(state);
+            if (corrupted) return corrupted;
+
+            const bill = state.bills.find(b => b.id === state.activeBillId) || state.bills[0];
+            if (!bill) return;
+
+            let idx = bill.cart.findIndex(t => t.productId === action.payload.productId)
+            if (idx === -1) return;
 
             let qty = parseFloat(action.payload.qty)
-            if(qty <= 0 || isNaN(qty)){
-                return toast.warning('Qty must greater than 0.005 kg')
-            } else {
-                state.cart[isProduct].productQuantity = qty
-                const qtysd = Number(state.cart[isProduct].productQuantity) 
-                const price = Number(state.cart[isProduct].productPrice) 
-                const total = (qtysd * price)
-               
-                state.cart[isProduct].productTotal = Math.ceil(Number(total)) 
-                let sum = state.cart.reduce((acc,cur)=>acc+ Number(cur.productTotal) , 0)
-                state.totalPriceInCart = sum
-            }
+            if (isNaN(qty) || qty < 0) qty = 0;
+
+            bill.cart[idx].productQuantity = qty
+            bill.cart[idx].productTotal = Math.ceil(qty * Number(bill.cart[idx].productPrice))
+            bill.totalPriceInCart = Math.ceil(bill.cart.reduce((acc, cur) => acc + Number(cur.productTotal), 0))
         },
-        resetCart :(state)=>{
-            return initialState
+        resetCart: (state) => {
+            const corrupted = validateState(state);
+            if (corrupted) return corrupted;
+
+            const bill = state.bills.find(b => b.id === state.activeBillId) || state.bills[0];
+            if (bill) {
+                bill.cart = []
+                bill.totalPriceInCart = 0
+                bill.customeronecart = { name: 'Retail Guest' }
+            }
         }
-}
+    }
 })
 
-
-export const {resetCart,handleChangeInKGQty,addProductToCart,removeProductFromCart,totalPrice,lessoneproduct,addProductOne,customizeProductPrice,addCustomerBillOne,deleCustomerBillOne} = cartSlice.actions
-
+export const {
+    resetCart,
+    handleChangeInKGQty,
+    addProductToCart,
+    removeProductFromCart,
+    lessoneproduct,
+    addProductOne,
+    customizeProductPrice,
+    addCustomerBillOne,
+    deleCustomerBillOne,
+    setActiveBill,
+    addBillTab,
+    removeBillTab,
+    ensureActiveBill
+} = cartSlice.actions
 
 export default cartSlice.reducer
-

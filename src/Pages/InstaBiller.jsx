@@ -1,334 +1,548 @@
-import { Formik } from 'formik'
-import React, { useEffect, useRef, useState } from 'react'
-import { useSelector , useDispatch} from 'react-redux';
-import { Link } from 'react-router-dom';
+import React, { useEffect, useRef, useState, useMemo, useCallback } from 'react'
+import { useSelector, useDispatch } from 'react-redux';
 import { toast } from 'react-toastify';
-import {addProductToCart,removeProductFromCart,totalPrice,lessoneproduct,addProductOne,customizeProductPrice, addCustomerBillOne, deleCustomerBillOne, handleChangeInKGQty, resetCart} from '../common/CartSlice'
-import * as Yup from 'yup';
-import { HiBackspace } from "react-icons/hi2";
-import { GrFormSubtract,GrFormAdd  } from "react-icons/gr";
+import {
+  addProductToCart, removeProductFromCart, lessoneproduct,
+  addProductOne, customizeProductPrice, addCustomerBillOne,
+  resetCart, setActiveBill, addBillTab, removeBillTab,
+  ensureActiveBill, handleChangeInKGQty
+} from '../common/CartSlice'
+import {
+  MdSearch, MdPrint, MdSave, MdDelete, MdAdd, MdRemove,
+  MdLibraryAdd, MdFactCheck, MdAddCircle, MdClose, MdPerson,
+  MdQrCodeScanner, MdPayments, MdHistory, MdKeyboard, MdBackspace, MdCurrencyRupee
+} from "react-icons/md";
 import genrateBill from '../Hooks/genrateBill';
-import {useReactToPrint} from 'react-to-print'
+import { useReactToPrint } from 'react-to-print'
 import PrintItems from '../components/PrintItems';
-import { PDFDownloadLink } from '@react-pdf/renderer';
-import BillPDF from '../components/BillPdf';
- 
+import GetAllProductHook from '../Hooks/GetAllProductHook';
 
-function InstaBiller(){
-    let [customerSelect, setCustomerSelect] = useState('customer')
-    let [paymentType,setPaymentType] = useState('cash')
-    let [isOnline,setIsOnline] = useState(false)
-    let [searchInput,setSearchInput] = useState('')
-    const [time,setTime] = useState("")
-    let appUserName = `${import.meta.env.VITE_APPUSER_NAME}`
-    let [tableData,setTableData] = useState([])
-    let [isAdmin,setIsAdmin] = useState(false)
-    let {product} = useSelector((state)=>state.product)
-    let {cart,totalPriceInCart,customeronecart} = useSelector((state)=>state.cart)
-    // let [ customerBillAddress,setCustomerBillAddress] = useState(customeronecart)
-// console.log(appUserName)
-  let {customer} = useSelector((state)=>state.customer)
-  const contentRef =useRef(null);
+/**
+ * InstaBiller: High-Performance POS Interface for Fresh Produce & Retail
+ * Senior Developer Edition focusing on speed, resilience, and UX.
+ */
+function InstaBiller() {
+  const dispatch = useDispatch()
+  const { getUSer } = GetAllProductHook()
 
+  // UI State
+  const [paymentType, setPaymentType] = useState('cash')
+  const [paymentStatus, setPaymentStatus] = useState('paid')
+  const [searchInput, setSearchInput] = useState('')
+  const [customerSearch, setCustomerSearch] = useState('')
+  const [showCustomerResults, setShowCustomerResults] = useState(false)
+  const [isPickingSlip, setIsPickingSlip] = useState(false)
+  const [currentTime, setCurrentTime] = useState(new Date().toLocaleTimeString())
 
-  let data = JSON.parse(localStorage?.getItem('data'))
+  // Refs for focus management
+  const searchInputRef = useRef(null)
+  const printRef = useRef(null);
 
-  
-  // let {totalPriceInCart} = useSelector((state)=>state.totalPriceInCart)
-  let {getCustomer,createBill} = genrateBill()
+  // Redux State
+  const { product = [] } = useSelector((state) => state.product)
+  const { bills = [], activeBillId } = useSelector((state) => state.cart || { bills: [], activeBillId: null })
+  const { customer = [] } = useSelector((state) => state.customer)
+  const { balanceSheet = [] } = useSelector((state) => state.balancesheet || { balanceSheet: [] });
+  const userData = JSON.parse(localStorage.getItem('data'))
+  const isAdmin = userData?.role === 'admin'
 
-    let dispatch = useDispatch()
-    function formatAMPM(date) {
-      var hours = date.getHours();
-      var minutes = date.getMinutes();
-      var ampm = hours >= 12 ? 'pm' : 'am';
-      hours = hours % 12;
-      hours = hours ? hours : 12; // the hour '0' should be '12'
-      minutes = minutes < 10 ? '0'+minutes : minutes;
-      var strTime = hours + ':' + minutes + ' ' + ampm;
-      return strTime;
-    }
-    // console.log(customeronecart)
-    let  today = new Date();
-let dd = String(today.getDate()).padStart(2, '0');
-let mm = String(today.getMonth() + 1).padStart(2, '0'); //January is 0!
-let yyyy = today.getFullYear();
+  // Current Active Context
+  const currentBill = useMemo(() => {
+    if (!Array.isArray(bills) || bills.length === 0) return null;
+    return bills.find(b => b.id === activeBillId) || bills[0];
+  }, [bills, activeBillId]);
 
-  today= dd + '/' + mm + '/' + yyyy
-   
-  useEffect(( )=>{ if(data && data.role !== 'admin'){
-    setIsAdmin(true)
-  }else{
-    setIsAdmin(false)
-  } },[tableData]) 
+  const { cart = [], totalPriceInCart = 0, customeronecart = { name: 'Retail Guest' } } = currentBill || {};
 
-  
-  // console.log(customer)
-  const handleChangeQtyK = (id,qtys)=>{
-    let qty = parseFloat(qtys)
-    if(qty > 0 ){
-      dispatch(handleChangeInKGQty({productId:id,qty:qtys}))
-    }else {
-      toast.warning('Qty should greater than 0.005 kg')
-    }
-  }
-  const hamdleChangePaymentType = (e)=>{
-    setPaymentType(e)
-      if(e !== 'online'){
-        
-        setIsOnline(false)
-        return
-      }
-      setIsOnline(true)
-  }
-  const handleChangePrice = async(id,price) => {
-    try {
-      let payload={
-        productId:id,
-        customPrice:price
-      }
-      dispatch(customizeProductPrice(payload))
-    } catch (error) {
-      toast.error('error occurs')
-    }
-  }
-  // console.log(cart)
-  const addProductBilling = (data) => {
-    // console.log(data)
-    try {
-      let payload = {
-            productPrice: data.productPrice,
-            productCode: data.productCode,
-            productName: data.productName,
-            productUnit: data.unitValue,
-            productQuantity: 1,
-            productTotal: Number(data.productPrice) * (data.productQuantity||1),
-            productBarcode: data.productBarcode,
-            qantityType:data.qantityType,
-            productId: data._id,
-            MRP:data.MRP,
-            MinCost:data.productCost
-      }
-      dispatch(addProductToCart(payload))
-     setTableData([])
-      
-    } catch (error) {
-      toast.error('error occur')
-    }
-  }
-//  console.log(cart)
-  const handleChange =  (e)=>{
-    
-    let val = e
-    // console.log(val)
-    if(val.length <= 0){
-      setTableData([])
-      return
-    }
-    
-    let code = product.filter((a,b)=>a.productCode===val)
-    let barcode = product.filter((a,b)=>a.productBarcode ===val)
-    // console.log(code)
-    const regex = new RegExp(`^${val}`, "i")
-    let filteredData = product.filter((a,b)=>{
-      return regex.test(a.productName) ||  regex.test(a.tanglishName)
-      // val && a && a.productName && .toLowerCase().includes(val)
-  })
-    
-    if(code.length > 0){
-      let isCode = code[0]
-      let payload = {
-        productPrice: isCode?.productPrice,
-        productCode: isCode?.productCode,
-        productName: isCode?.productName,
-        productUnit: isCode?.unitValue,
-        productQuantity: 1,
-        productTotal: isCode?.productPrice * 1,
-        productBarcode: isCode?.productBarcode,
-        qantityType:isCode?.qantityType,
-        productId: isCode?._id,
-        MRP:isCode?.MRP,
-        MinCost:isCode?.productCost
-  }
-  // console.log(code,'code')
- 
-    dispatch(addProductToCart(payload))
-    setSearchInput('')
-   
-  return
-    }else if(barcode.length >0){
-      let payload = {
-        productPrice: barcode.productPrice,
-        productCode: barcodeproductCode,
-        productName: barcodeproductName,
-        productUnit: barcodeunitValue,
-        productQuantity: 1,
-        productTotal: barcodeproductPrice * 1,
-        productBarcode: barcodeproductBarcode,
-        qantityType:barcodeqantityType,
-        productId: barcode._id,
-        MRP:barcode?.MRP,
-        MinCost:barcode?.productCost
-  }
-  dispatch(addProductToCart(payload))
-  setSearchInput('')
-  return
-    } else {
+  const { createBill } = genrateBill()
 
-      if(filteredData.length > 0){
-        setTableData(filteredData)
-       }
-    
-    }
-
-  //  console.log(filteredData,product);
-   
-  }
-
-  const handleChangeCustomer = async(e)=>{
-    e.preventDefault()
-    setCustomerSelect(e.target.value)
-     getCustomer()
-    if(e.target.value == 'customer'){
-      dispatch(deleCustomerBillOne())
-      // console.log(customeronecart)
-      // setCustomerBillAddress('')
-    }
-  }
-  const handleCustomerField = async(val)=>{
-    let parsed = JSON.parse(val.target.value)
-    // console.log(parsed)
-    // cons
-    dispatch(addCustomerBillOne(parsed))
-    
-
-  }
+  // Print Logic
   const handleEstimatePrint = useReactToPrint({
-    contentRef
-  })
-  
-  return <>
-  <div className="container mx-auto p-4">
-  <div className=" flex p-4 ">
-  <div className="h-4"> </div>
+    contentRef: printRef,
+  });
 
- </div>
- <div className="pt-5">
- <div className=""><h1 className="text-center uppercase text-2xl underline text-white">{appUserName}</h1></div>
-   <div className="">
-   {/* <div className="flex justify-between mb-4">
-        <PDFDownloadLink document={<BillPDF cart={cart} totalPrice={totalPriceInCart} today={today} companyName={appUserName} />} fileName="bill.pdf">
-          {({ loading }) => (loading ? "Loading..." : <button className="btn btn-primary">Download PDF</button>)}
-        </PDFDownloadLink>
-      </div> */}
-   </div>
-   <div className=""></div>
-   
- </div>
- <div >
-                <div className="flex justify-between">
-                <div className="my-auto">
-                    <select className='select w-full max-w-xs' onChange={handleChangeCustomer}>
+  /**
+   * Performance Optimized Search
+   * 10k product search using memoized filtering
+   */
+  const filteredProducts = useMemo(() => {
+    const term = searchInput.toLowerCase().trim();
+    if (!term) return [];
 
-                      <option  defaultValuevalue="customer" disabled>customer</option>
-                      <option  value="customer">customer</option>
-                      <option value="customerR">customer R</option>
-                      
-                    </select>
-                   </div>
-                   {customerSelect === 'customerR'?<div className="my-auto">
-                    <select className=' select w-full max-w-xs' onChange={handleCustomerField}>
-                      <option  disabled selected>Select Customer Name</option>
-                      {customer?.length>0 && customer.map((e,i)=>{
-                        return <option value={JSON.stringify(e)} key={i}  >{e.name}</option>
-                      })}
-                    </select>
-                   </div>:""}
-                   
-                  <div className="">
-                  <input type="text" placeholder='Add product BY NAME OR CODE'  className='input input-lg text-black w-full ' value={searchInput} onChange={(e)=>{setSearchInput(e.target.value); handleChange(e.target.value)}} />
-                  </div>
-                   <div className="my-auto">
-                    <select className='select w-full max-w-xs' onChange={(e)=>hamdleChangePaymentType(e.target.value)}>
-                      <option defaultValue={'cash'} value="">Cash</option>
-                      <option value="credit" disabled={customerSelect==='customer'?true:false} >credit</option>
-                      <option value="online">Online</option>
-                    </select>
-                   </div>
-                   </div>
-                  {tableData.length >0 &&  <div className="w-3/6 mx-auto  p-2   text-white  opacity-95 border border-zinc-950  rounded-lg shadow sm:p-6 md:p-8 dark:bg-gray-800 overflow-y-auto max-h-56 dark:border-gray-700 uppercase "> 
-             {tableData.length >0 && tableData.map((e,i)=>{
-            return <p className="bg-slate-950 hover:bg-slate-400 rounded-lg p-2"  key={i} onClick={()=>addProductBilling(e)} >
-              {e.productName} {e.unitValue} {e.qantityType}
+    return product
+      .filter(p =>
+        p.productName.toLowerCase().includes(term) ||
+        p.productCode.toLowerCase().includes(term) ||
+        p.tanglishName?.toLowerCase().includes(term)
+      )
+      .slice(0, 15);
+  }, [product, searchInput]);
+
+  const filteredCustomers = useMemo(() => {
+    const term = customerSearch.toLowerCase().trim();
+    if (!term) return customer.slice(0, 5);
+    return customer
+      .filter(c => c.name.toLowerCase().includes(term) || c.mobile.toLowerCase().includes(term))
+      .slice(0, 10);
+  }, [customer, customerSearch]);
+
+  /**
+   * Action Handlers
+   */
+  const addToCart = useCallback((p) => {
+    dispatch(addProductToCart({
+      productId: p._id,
+      productName: p.productName,
+      productPrice: Number(p.productPrice),
+      productCode: p.productCode,
+      productUnit: p.unitValue,
+      qantityType: p.qantityType,
+    }))
+    setSearchInput('')
+    searchInputRef.current?.focus()
+    toast.success(`${p.productName} added`, { autoClose: 500, hideProgressBar: true, position: 'bottom-right' })
+  }, [dispatch]);
+
+  const handleSave = async (shouldPrint = false) => {
+    if (cart.length === 0) return toast.warning("Workspace empty");
+
+    // Safety: Credit Limit Check
+    if (paymentStatus !== 'paid' && customeronecart?._id) {
+      const sheet = balanceSheet.find(b => b.customerId === customeronecart._id);
+      const currentDebt = sheet?.remainingBalance || 0;
+      const limit = customeronecart.creditLimit || 5000;
+
+      if (Number(currentDebt) + Number(totalPriceInCart) > limit) {
+        return toast.error(`CREDIT LIMIT EXCEEDED: Limit ₹${limit}, Current Debt ₹${currentDebt}`);
+      }
+    }
+
+    try {
+      await createBill(paymentType, cart, totalPriceInCart, customeronecart, paymentStatus);
+      if (shouldPrint) handleEstimatePrint();
+
+      toast.success("Transaction Finalized");
+      dispatch(resetCart());
+      getUSer();
+    } catch (err) {
+      toast.error("Process Failed");
+    }
+  }
+
+  // Keyboard Event Management
+  useEffect(() => {
+    const handleKeys = (e) => {
+      if (e.altKey) {
+        const key = e.key.toLowerCase();
+        if (key === 's') { e.preventDefault(); handleSave(false); }
+        if (key === 'p') { e.preventDefault(); handleSave(true); }
+        if (key === 'f') { e.preventDefault(); searchInputRef.current?.focus(); }
+        if (key === 'n') { e.preventDefault(); dispatch(addBillTab()); }
+        if (key === 'q') { e.preventDefault(); dispatch(resetCart()); }
+      }
+    };
+    window.addEventListener('keydown', handleKeys);
+    return () => window.removeEventListener('keydown', handleKeys);
+  }, [cart, totalPriceInCart, customeronecart, paymentStatus, paymentType]);
+
+  // Initial Sync
+  useEffect(() => {
+    dispatch(ensureActiveBill());
+    const clock = setInterval(() => setCurrentTime(new Date().toLocaleTimeString()), 1000);
+    return () => clearInterval(clock);
+  }, [dispatch]);
+
+  if (!currentBill) return <div className="h-screen flex items-center justify-center text-primary font-black animate-pulse">Initializing Counter...</div>;
+
+  return (
+    <div className="container mx-auto px-4 py-8 max-w-[1600px] fade-in min-h-screen">
+
+      {/* Upper Navigation & Status */}
+      <div className="flex flex-col xl:flex-row items-start xl:items-center justify-between gap-6 mb-8">
+        <div className="flex items-center gap-4">
+          <div className="w-12 h-12 rounded-2xl bg-primary text-white flex items-center justify-center text-2xl shadow-lg shadow-primary/30">
+            <MdPayments />
+          </div>
+          <div>
+            <h1 className="text-3xl font-display font-black text-surface-900 leading-none">Checkout</h1>
+            <p className="text-[10px] font-black text-surface-400 uppercase tracking-[0.2em] mt-1 flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-success"></span> Systems Ready • {currentTime}
             </p>
-            })}
-              </div>} 
+          </div>
+        </div>
+
+        {/* Tab Logic - Senior Design */}
+        <div className="flex items-center gap-3 bg-surface-100 p-1.5 rounded-2xl border border-surface-200">
+          {bills.map((tab, idx) => (
+            <button
+              key={tab.id}
+              onClick={() => dispatch(setActiveBill(tab.id))}
+              className={`relative h-11 px-6 rounded-xl font-black text-[11px] uppercase tracking-widest transition-all overflow-hidden flex items-center gap-3 ${activeBillId === tab.id
+                ? 'bg-white text-primary shadow-premium'
+                : 'text-surface-400 hover:text-surface-600'
+                }`}
+            >
+              <span className="opacity-40">{idx + 1}</span>
+              {tab.customeronecart?.name || tab.name}
+              {bills.length > 1 && (
+                <MdClose
+                  className="hover:text-error transition-colors"
+                  onClick={(e) => { e.stopPropagation(); dispatch(removeBillTab(tab.id)); }}
+                />
+              )}
+              {activeBillId === tab.id && <div className="absolute bottom-0 left-0 right-0 h-1 bg-primary"></div>}
+            </button>
+          ))}
+          <button
+            onClick={() => dispatch(addBillTab())}
+            className="w-11 h-11 rounded-xl bg-white/50 border-2 border-dashed border-surface-300 text-surface-400 hover:border-primary hover:text-primary transition-all flex items-center justify-center"
+          >
+            <MdAddCircle className="text-xl" />
+          </button>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+
+        {/* Left Console: Inventory & Workflow */}
+        <div className="lg:col-span-8 space-y-6">
+
+          {/* Main Command Bar */}
+          <div className="glass-card p-4 relative z-50">
+            <div className="flex flex-col md:flex-row gap-4">
+              <div className="relative flex-1">
+                <MdQrCodeScanner className={`absolute left-4 top-1/2 -translate-y-1/2 text-xl transition-colors ${searchInput ? 'text-primary' : 'text-surface-400'}`} />
+                <input
+                  ref={searchInputRef}
+                  type="text"
+                  placeholder="Scanner Mode Active: Scan or Search..."
+                  className="w-full h-16 pl-14 pr-4 bg-surface-50 border-2 border-surface-100 rounded-2xl text-lg font-bold focus:bg-white focus:border-primary transition-all outline-none"
+                  value={searchInput}
+                  onChange={(e) => setSearchInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && filteredProducts.length > 0) addToCart(filteredProducts[0]);
+                  }}
+                />
+
+                {/* Command Results */}
+                {searchInput && (
+                  <div className="absolute top-[110%] left-0 right-0 glass-card shadow-2xl border-2 border-primary/10 overflow-hidden animate-in fade-in slide-in-from-top-2">
+                    <div className="bg-surface-50 px-4 py-2 border-b flex justify-between items-center text-[10px] font-black uppercase tracking-widest text-surface-400">
+                      <span>Found {filteredProducts.length} items</span>
+                      <span className="flex items-center gap-2"><MdKeyboard /> Enter to add first</span>
+                    </div>
+                    <div className="max-h-[400px] overflow-y-auto">
+                      {filteredProducts.map(p => (
+                        <button
+                          key={p._id}
+                          onClick={() => addToCart(p)}
+                          className="w-full px-6 py-4 flex items-center justify-between hover:bg-primary/5 border-b border-surface-100 transition-all group"
+                        >
+                          <div className="text-left">
+                            <p className="font-black text-surface-900 group-hover:text-primary transition-colors">{p.productName}</p>
+                            <p className="text-[10px] font-bold text-surface-400 uppercase">{p.tanglishName} • {p.productCode}</p>
+                          </div>
+                          <div className="flex items-center gap-6">
+                            <div className="text-right">
+                              <p className="font-display font-black text-primary text-xl">₹{p.productPrice}</p>
+                              <p className="text-[8px] font-black text-surface-300 line-through">MRP ₹{p.MRP}</p>
+                            </div>
+                            <div className={`px-2 py-1 rounded bg-surface-100 text-[10px] font-black ${Number(p.stockQuantity) < 10 ? 'text-error' : 'text-success'}`}>
+                              STK: {p.stockQuantity}
+                            </div>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Customer Node */}
+              <div className="relative w-full md:w-[300px]">
+                <MdPerson className="absolute left-4 top-1/2 -translate-y-1/2 text-xl text-surface-400" />
+                <input
+                  type="text"
+                  placeholder="Customer Search..."
+                  className="w-full h-16 pl-14 pr-4 bg-surface-50 border-2 border-surface-100 rounded-2xl font-bold focus:bg-white focus:border-primary transition-all outline-none"
+                  value={customerSearch || (customeronecart?.name !== 'Retail Guest' ? customeronecart.name : '')}
+                  onChange={(e) => {
+                    setCustomerSearch(e.target.value);
+                    setShowCustomerResults(true);
+                  }}
+                  onFocus={() => setShowCustomerResults(true)}
+                />
+                {showCustomerResults && (
+                  <div className="absolute top-[110%] left-0 right-0 glass-card shadow-2xl border overflow-hidden z-[100]">
+                    <button
+                      onClick={() => { dispatch(addCustomerBillOne({ name: 'Retail Guest' })); setShowCustomerResults(false); setCustomerSearch(''); }}
+                      className="w-full px-6 py-3 text-left font-black text-[10px] uppercase text-surface-400 hover:bg-surface-50 border-b"
+                    >
+                      Guest (Default)
+                    </button>
+                    {filteredCustomers.map(c => (
+                      <button
+                        key={c._id}
+                        onClick={() => { dispatch(addCustomerBillOne(c)); setShowCustomerResults(false); setCustomerSearch(c.name); }}
+                        className="w-full px-6 py-4 flex flex-col hover:bg-primary/5 transition-all text-left border-b last:border-0"
+                      >
+                        <span className="font-black text-surface-900 text-sm">{c.name}</span>
+                        <span className="text-[10px] font-bold text-surface-400">{c.mobile} • {c.address || 'No Address'}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
-           
-    <div className="">
-      <table className="table bg-white text-center max-h-3/4  table-zebra">
-        <thead>
-          <tr>
-              <td>Item no</td>
-              <td>product name</td>
-              <td>MRP</td>
-              <td>product per price</td>
-              <td>product qty</td>
-              <td>Amount</td>
-              <td>Edit</td>
-          </tr>
-        </thead>
-        {/* table body */}
-        
-        <tbody>
-          {cart?.length > 0 ? cart.map((e,i)=><tr key={i} id={i}>
-                <td className="">{i+1}</td>
-                <td className="">{e.productName}  {e.productUnit } {e.qantityType}
-                </td>
-                <td>{e.MRP}</td>
-                <td className=""><input defaultValue={e.productPrice} disabled={isAdmin} type='number' className='input    input-xs	 max-w-xs text-center bg-transparent' onChange={(s)=>handleChangePrice(e.productId,s.target.value)} /></td>
-                {e.qantityType === "Kg"? (<td className="flex justify-center gap-3 items-center">
-                <input type="number" placeholder='1.00'   step="any" defaultValue={e.productQuantity} onChange={(s)=>handleChangeQtyK(e.productId,s.target.value)}/></td>) :(<td className="flex justify-center gap-3 items-center">
-              <GrFormSubtract className='hover:bg-slate-200 rounded cursor-pointer  ' onClick={()=>dispatch(lessoneproduct(e.productId))} /><div className="">{e.productQuantity}</div> <GrFormAdd className='hover:bg-slate-200 rounded cursor-pointer  ' onClick={()=>dispatch(addProductOne(e.productId))}/>
-                  </td>)
-                }
-                <td className="">{Math.ceil(Number((e.productPrice)*(e.productQuantity)))}</td>
-                <td className="mx-auto" onClick={()=>dispatch(removeProductFromCart(e.productId))}><HiBackspace /></td>
-          </tr>):''}
-          <tr>
-           <td colSpan={4}>TOTAL</td>
-           <td>{totalPriceInCart}</td>
-           <td></td>
-          </tr>
-        </tbody>
-      </table>
+          </div>
+
+          {/* Cart View */}
+          <div className="glass-card overflow-hidden">
+            <div className="bg-surface-50 py-3 px-6 border-b flex justify-between items-center">
+              <h2 className="text-[10px] font-black uppercase tracking-widest text-surface-400 flex items-center gap-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-primary"></span> Current Workspace Invoice
+              </h2>
+              <div className="flex gap-4">
+                <select
+                  className="bg-transparent border-none text-[10px] font-black uppercase text-surface-500 focus:ring-0 cursor-pointer"
+                  value={paymentType}
+                  onChange={(e) => setPaymentType(e.target.value)}
+                >
+                  <option value="cash">Cash Settlement</option>
+                  <option value="online">Digital/UPI</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="overflow-x-auto min-h-[400px]">
+              <table className="premium-table">
+                <thead>
+                  <tr>
+                    <th className="w-12 text-center">#</th>
+                    <th>Product</th>
+                    <th className="text-center w-[200px]">Quantity / Weight</th>
+                    <th className="text-right w-[120px]">Price</th>
+                    <th className="text-right w-[120px]">Subtotal</th>
+                    <th className="w-16"></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {cart.length > 0 ? cart.map((item, i) => (
+                    <tr key={item.productId} className="hover:bg-surface-50/50 transition-colors h-24">
+                      <td className="text-center opacity-30 font-black text-xs">{i + 1}</td>
+                      <td>
+                        <p className="font-black text-surface-900 uppercase text-sm leading-tight">{item.productName}</p>
+                        <p className="text-[10px] font-bold text-surface-400 tracking-tighter flex items-center gap-2 mt-0.5">
+                          {item.productCode} <span className="opacity-30">|</span> Unit: {item.productUnit}{item.qantityType}
+                        </p>
+                      </td>
+                      <td className="text-center">
+                        <div className="flex items-center justify-center gap-2 group">
+                          <button
+                            onClick={() => dispatch(lessoneproduct(item.productId))}
+                            className="w-10 h-10 rounded-xl bg-surface-100 flex items-center justify-center text-surface-400 hover:bg-error/10 hover:text-error transition-all active:scale-95"
+                          >
+                            <MdRemove />
+                          </button>
+                          <div className="relative">
+                            <input
+                              type="number"
+                              step="0.001"
+                              value={item.productQuantity}
+                              onChange={(e) => dispatch(handleChangeInKGQty({ productId: item.productId, qty: e.target.value }))}
+                              className="w-24 h-12 bg-surface-50 border-2 border-surface-100 rounded-xl text-center font-display font-black text-lg focus:border-primary focus:bg-white transition-all outline-none"
+                            />
+                            <div className="absolute top-1/2 -translate-y-1/2 right-2 text-[8px] font-black text-surface-300 uppercase select-none">
+                              {item.qantityType}
+                            </div>
+                          </div>
+                          <button
+                            onClick={() => dispatch(addProductOne(item.productId))}
+                            className="w-10 h-10 rounded-xl bg-primary/5 text-primary flex items-center justify-center hover:bg-primary hover:text-white transition-all active:scale-95"
+                          >
+                            <MdAdd />
+                          </button>
+                        </div>
+                      </td>
+                      <td className="text-right">
+                        <div className="flex items-center justify-end group">
+                          <MdCurrencyRupee className="text-[10px] opacity-20 group-focus-within:opacity-100 transition-opacity" />
+                          <input
+                            type="number"
+                            defaultValue={item.productPrice}
+                            disabled={!isAdmin}
+                            className="w-20 text-right bg-transparent border-none font-display font-black text-sm text-surface-400 focus:text-primary transition-colors focus:ring-0"
+                            onChange={(e) => dispatch(customizeProductPrice({ productId: item.productId, customPrice: e.target.value }))}
+                          />
+                        </div>
+                      </td>
+                      <td className="text-right font-display font-black text-surface-900 text-lg">
+                        ₹{item.productTotal}
+                      </td>
+                      <td className="text-center">
+                        <button
+                          onClick={() => dispatch(removeProductFromCart(item.productId))}
+                          className="w-10 h-10 flex items-center justify-center text-surface-200 hover:text-error transition-colors"
+                        >
+                          <MdDelete className="text-xl" />
+                        </button>
+                      </td>
+                    </tr>
+                  )) : (
+                    <tr>
+                      <td colSpan={6} className="py-40 text-center">
+                        <div className="max-w-[200px] mx-auto opacity-10">
+                          <MdQrCodeScanner className="text-8xl mx-auto mb-4" />
+                          <p className="font-black text-sm uppercase tracking-widest leading-loose">Waiting for Entry...</p>
+                        </div>
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        {/* Right Panel: Logistics & Checkout */}
+        <div className="lg:col-span-4 space-y-6">
+
+          {/* Financial Context Card */}
+          <div className="glass-card p-6 bg-surface-900 text-white border-none shadow-2xl relative overflow-hidden group">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-full -mr-16 -mt-16 blur-2xl group-hover:bg-primary/20 transition-all duration-1000"></div>
+
+            <div className="flex justify-between items-start mb-10">
+              <div>
+                <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-primary-200 mb-1">Settlement Mode</h4>
+                <select
+                  className="bg-white/5 border border-white/10 rounded-lg px-3 py-1.5 text-xs font-black uppercase text-primary-200 focus:outline-none focus:bg-white/10"
+                  value={paymentStatus}
+                  onChange={(e) => setPaymentStatus(e.target.value)}
+                >
+                  <option value="paid" className="text-surface-900">Instant Settlement</option>
+                  <option value="pending" className="text-surface-900" disabled={customeronecart?.name === 'Retail Guest'}>Convert to Credit</option>
+                  <option value="partial" className="text-surface-900" disabled={customeronecart?.name === 'Retail Guest'}>Split Payment</option>
+                </select>
+              </div>
+              <div className="text-right">
+                <MdFactCheck className="text-4xl text-primary opacity-50" />
+              </div>
+            </div>
+
+            <div className="space-y-4 mb-10">
+              <div className="flex justify-between items-center">
+                <span className="text-xs font-bold text-white/50 uppercase">Order Volume</span>
+                <span className="font-black">{cart.length} SKUs</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-xs font-bold text-white/50 uppercase">Customer Node</span>
+                <span className="font-black text-primary-200 uppercase tracking-tighter truncate max-w-[150px]">{customeronecart?.name}</span>
+              </div>
+              <div className="divider opacity-5 my-2"></div>
+              <div className="flex justify-between items-end">
+                <span className="text-sm font-black uppercase text-white/40">Grand Total</span>
+                <div className="text-right">
+                  <p className="text-[10px] font-black text-primary uppercase text-right mb-1">INR (Inclusive TAX)</p>
+                  <p className="text-5xl font-display font-black text-primary tracking-tighter leading-none">₹{totalPriceInCart}</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-3">
+              <button
+                disabled={cart.length === 0}
+                onClick={() => handleSave(true)}
+                className="premium-button w-full h-16 bg-primary text-white flex items-center justify-center gap-3 text-lg hover:shadow-primary/40 transition-all active:scale-95"
+              >
+                <MdPrint className="text-2xl" /> Commit & Print Invoice
+              </button>
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  disabled={cart.length === 0}
+                  onClick={() => handleSave(false)}
+                  className="h-12 border-2 border-white/10 rounded-xl font-black text-[10px] uppercase hover:bg-white/5 transition-all flex items-center justify-center gap-2"
+                >
+                  <MdSave className="text-base" /> Quick Save
+                </button>
+                <button
+                  onClick={() => dispatch(resetCart())}
+                  className="h-12 border-2 border-white/10 rounded-xl font-black text-[10px] uppercase hover:bg-error/10 hover:text-error hover:border-error/20 transition-all flex items-center justify-center gap-2"
+                >
+                  <MdBackspace className="text-base" /> Clear Workspace
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Quick Stats / History Integration */}
+          <div className="glass-card p-6 space-y-6">
+            <h4 className="text-[10px] font-black uppercase tracking-widest text-surface-400 flex items-center gap-2">
+              <MdHistory className="text-primary text-lg" /> Recent Node Activity
+            </h4>
+            <div className="space-y-4">
+              {isAdmin ? (
+                <>
+                  <button
+                    onClick={() => { setIsPickingSlip(false); document.getElementById('view_estimate').showModal(); }}
+                    className="w-full h-12 flex items-center justify-between px-6 rounded-xl bg-surface-50 hover:bg-white border-2 border-surface-100 transition-all group"
+                  >
+                    <span className="text-[10px] font-black uppercase text-surface-500 group-hover:text-primary transition-colors">Visual Preview Log</span>
+                    <MdFactCheck className="text-xl text-surface-300 group-hover:text-primary transition-colors" />
+                  </button>
+                  <button
+                    onClick={() => { setIsPickingSlip(true); document.getElementById('view_estimate').showModal(); }}
+                    className="w-full h-12 flex items-center justify-between px-6 rounded-xl bg-surface-50 hover:bg-white border-2 border-surface-100 transition-all group"
+                  >
+                    <span className="text-[10px] font-black uppercase text-surface-500 group-hover:text-indigo-500 transition-colors">Generate Picking Slip</span>
+                    <MdLibraryAdd className="text-xl text-surface-300 group-hover:text-indigo-500 transition-colors" />
+                  </button>
+                </>
+              ) : (
+                <div className="p-10 text-center opacity-20">
+                  <MdKeyboard className="text-4xl mx-auto mb-2" />
+                  <p className="text-[10px] font-black uppercase italic">Standard Ops Mode</p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Senior Modal Infrastructure */}
+      <dialog id="view_estimate" className="modal backdrop-blur-md">
+        <div className="modal-box max-w-2xl bg-white p-0 overflow-hidden rounded-[2rem] shadow-2xl">
+          <div className="p-8 bg-surface-50 border-b flex items-center justify-between">
+            <div>
+              <h3 className="text-2xl font-display font-black text-surface-900 leading-none">Document Preview</h3>
+              <p className="text-[10px] font-black text-surface-400 uppercase mt-1 tracking-widest">Digital Terminal Draft</p>
+            </div>
+            <form method="dialog"><button className="w-10 h-10 rounded-full bg-white shadow-sm flex items-center justify-center hover:text-error transition-colors"><MdClose className="text-xl" /></button></form>
+          </div>
+          <div className="p-10">
+            <div className="border border-dashed border-surface-300 rounded-[1.5rem] p-8 bg-surface-50/50">
+              <PrintItems props={{ cart, totalPriceInCart, customeronecart, time: currentTime, today: new Date().toLocaleDateString(), contentRef: null, isPickingSlip }} />
+            </div>
+
+            {/* Print Engine Target */}
+            <div className="hidden">
+              <div ref={printRef}>
+                <PrintItems props={{ cart, totalPriceInCart, customeronecart, time: currentTime, today: new Date().toLocaleDateString(), contentRef: null, isPickingSlip }} />
+              </div>
+            </div>
+          </div>
+          <div className="p-8 bg-surface-50 border-t flex justify-end gap-3">
+            <form method="dialog"><button className="h-14 px-8 font-black uppercase text-xs text-surface-400 hover:text-surface-900 transition-colors">Discard</button></form>
+            <button
+              onClick={handleEstimatePrint}
+              className="h-14 px-10 bg-primary text-white rounded-2xl font-black uppercase text-xs shadow-xl shadow-primary/20 flex items-center gap-3 transition-transform active:scale-95"
+            >
+              <MdPrint className="text-xl" /> Print Physical Copy
+            </button>
+          </div>
+        </div>
+      </dialog>
     </div>
-    <div className="flex justify-around p-4">
-      <div className="btn" onClick={()=>createBill(paymentType,cart,totalPriceInCart,customeronecart)}>save</div>
-      <div className="btn" onClick={()=>setTime(formatAMPM(new Date))}>
-        <button className="btn" onClick={()=>document.getElementById('my_modal_3').showModal()}>Print Estimate</button>
-<dialog id="my_modal_3" className="modal">
-  <div className="modal-box">
-    <form method="dialog">
-      {/* if there is a button in form, it will close the modal */}
-      <button className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
-    </form>
-      <PrintItems props={{cart,totalPriceInCart,time,today,contentRef,customeronecart,appUserName,isOnline}} />
-    
-    <div className="">
-      <p className="btn" onClick={()=>handleEstimatePrint()}>Print</p>
-    </div>
-            
-  </div>
-</dialog>
-</div>
-      <div className="btn" onClick={()=>{createBill(paymentType,cart,totalPriceInCart,customeronecart);handleEstimatePrint()}}>save & print</div>
-      <div className="btn btn-error btn-outline" onClick={()=>dispatch(resetCart())}>delete</div>
-    </div>
-     
-            
-  </div>
-  </>
+  )
 }
 
 export default InstaBiller
