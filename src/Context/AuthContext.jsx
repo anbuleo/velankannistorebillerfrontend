@@ -1,16 +1,35 @@
-import React, {  useEffect, useState } from 'react'
-export const UserDataContext = React.createContext(null)
-function AuthContext({children}) {
-    let [data,setData] = useState([])
+import React, { useEffect, useState } from 'react'
+import OfflineSyncManager from '../components/OfflineSyncManager'
+import { UserDataContext } from './UserDataContext'
 
-    useEffect(()=>{
-      let user = localStorage.getItem('data')
-      setData(JSON.parse(user))
-    //   console.log(data)
-    },[])
-  return <UserDataContext.Provider value={{data,setData}}>
-    {children}
-  </UserDataContext.Provider>
+function AuthContext({ children }) {
+  const [data, setData] = useState(null)
+  const [isOnline, setIsOnline] = useState(navigator.onLine)
+
+  useEffect(() => {
+    // Initial Load
+    const user = localStorage.getItem('data')
+    if (user) setData(JSON.parse(user))
+
+    // Connectivity Listeners
+    const handleOnline = () => setIsOnline(true)
+    const handleOffline = () => setIsOnline(false)
+
+    window.addEventListener('online', handleOnline)
+    window.addEventListener('offline', handleOffline)
+
+    return () => {
+      window.removeEventListener('online', handleOnline)
+      window.removeEventListener('offline', handleOffline)
+    }
+  }, [])
+
+  return (
+    <UserDataContext.Provider value={{ data, setData, isOnline }}>
+      <OfflineSyncManager />
+      {children}
+    </UserDataContext.Provider>
+  )
 }
 
 export default AuthContext

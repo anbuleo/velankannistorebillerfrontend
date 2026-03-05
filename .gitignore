@@ -23,3 +23,12 @@ dist-ssr
 *.sln
 *.sw?
 .env
+
+# Electron
+release
+dist
+dist-ssr
+*.exe
+*.zip
+*.dmg
+*.pkg

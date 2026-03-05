@@ -23,12 +23,15 @@ const persistConfig = {
 }
 
 
+import offlineReducer from '../common/OfflineSlice'
+
 const reducer = combineReducers({
   product: productReducer,
   cart: cartReducer,
   customer: customerReducer,
   sale: saleReducer,
-  balancesheet: BalanceSheetReducer
+  balancesheet: BalanceSheetReducer,
+  offline: offlineReducer
 })
 
 const persistedReducer = persistReducer(persistConfig, reducer)

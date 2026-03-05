@@ -1,6 +1,6 @@
 import { useContext, useEffect, useState } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
-import { UserDataContext } from '../Context/AuthContext'
+import { UserDataContext } from '../Context/UserDataContext'
 import { toast } from 'react-toastify'
 import {
   MdMenu, MdAccountCircle, MdLogout, MdKeyboardArrowDown,
@@ -9,7 +9,7 @@ import {
 import AxiosService from '../common/Axioservice'
 
 function Nav() {
-  const { data } = useContext(UserDataContext)
+  const { data, isOnline } = useContext(UserDataContext)
   const [pendingCount, setPendingCount] = useState(0)
   const navigate = useNavigate()
   const location = useLocation()
@@ -136,9 +136,12 @@ function Nav() {
                   <span className="text-[14px] font-display font-black tracking-tight leading-none text-surface-900">
                     Velankanni <span className="text-primary">Biller</span>
                   </span>
-                  <span className="text-[8px] font-bold text-surface-400 uppercase tracking-widest leading-none mt-0.5">
-                    Premium Admin
-                  </span>
+                  <div className="flex items-center gap-1.5 mt-0.5">
+                    <span className={`w-1.5 h-1.5 rounded-full ${isOnline ? 'bg-success' : 'bg-warning animate-pulse'}`}></span>
+                    <span className="text-[8px] font-bold text-surface-400 uppercase tracking-widest leading-none">
+                      {isOnline ? 'System Online' : 'Local Mode'}
+                    </span>
+                  </div>
                 </div>
               </Link>
             </div>
