@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://dileo.co.in/sitemap.xml
