@@ -18,6 +18,8 @@ function Table({ data }) {
     try { return JSON.parse(localStorage.getItem('data')) } catch (e) { return {} }
   }, [])
 
+  const isAdmin = userData.role === 'admin'
+
   const handleDeleteProduct = useCallback(async (id, name) => {
     if (userData.role !== 'admin') return toast.warning('Admin privileges required to delete products')
 
