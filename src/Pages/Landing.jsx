@@ -35,7 +35,7 @@ function Landing() {
         };
         const titles = {
             en: "Vellankanni Stores | Premium Grocery & Fresh Produce Dharapuram",
-            ta: "வெள்ளக்கண்ணி ஸ்டோர்ஸ் | தாராபுரத்தின் சிறந்த மளிகை மற்றும் காய்கறி கடை"
+            ta: "வேளாங்கண்ணி ஸ்டோர்ஸ் | தாராபுரத்தின் சிறந்த மளிகை மற்றும் காய்கறி கடை"
         };
 
         document.title = titles[lang];
@@ -119,7 +119,7 @@ function Landing() {
             staffLogin: "Staff Login"
         },
         ta: {
-            brand: "வெள்ளக்கண்ணி",
+            brand: "வேளாங்கண்ணி",
             tag: "1989 முதல் சிறந்த விற்பனை சேவை",
             heroTitle: "தரமான மளிகை பொருட்கள், நம்பகமான சேவை.",
             heroDesc: "புதிய காய்கறிகள், உயர்தர பொருட்கள் மற்றும் சிறந்த சேவையை தாராபுரத்தில் எங்களிடம் அனுபவியுங்கள்.",
