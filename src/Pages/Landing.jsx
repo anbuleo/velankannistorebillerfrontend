@@ -189,9 +189,9 @@ function Landing() {
         "@context": "https://schema.org",
         "@type": "GroceryStore",
         "name": "Vellankanni Stores",
-        "image": "https://vellankannistores.com/vellankanni_stores_hero_1772979609958.png",
-        "@id": "https://vellankannistores.com",
-        "url": "https://vellankannistores.com",
+        "image": "https://dileo.co.in/vellankanni_stores_hero_1772979609958.png",
+        "@id": "https://dileo.co.in",
+        "url": "https://dileo.co.in",
         "telephone": "919095774352",
         "priceRange": "$$",
         "address": {
