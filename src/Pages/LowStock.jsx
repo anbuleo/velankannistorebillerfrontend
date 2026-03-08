@@ -1,10 +1,18 @@
-import React, { useMemo } from 'react'
+import GetAllProductHook from '../Hooks/GetAllProductHook'
 import { useSelector } from 'react-redux'
 import { MdInventory2, MdWarning, MdArrowForward } from 'react-icons/md'
 import { Link } from 'react-router-dom'
+import { useEffect, useMemo } from 'react'
 
 function LowStock() {
     const { product } = useSelector(state => state.product)
+    const { getUSer } = GetAllProductHook()
+
+    useEffect(() => {
+        if (!product || product.length === 0) {
+            getUSer()
+        }
+    }, [])
 
     const lowStockItems = useMemo(() => {
         return product.filter(p => Number(p.stockQuantity) < 5)

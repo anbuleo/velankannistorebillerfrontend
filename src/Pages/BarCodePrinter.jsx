@@ -66,7 +66,7 @@ function BarCodePrinter() {
     setName(fn.productName)
     setMrp(fn.MRP)
     setData(val)
-    setQty(`1${fn.qantityType || 'PCS'}`)
+    setQty(`${fn.unitValue || '1'}${fn.qantityType || 'PCS'}`)
     generateBarcode(val)
   }
 

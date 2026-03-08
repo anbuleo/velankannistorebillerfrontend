@@ -1,43 +1,88 @@
 import React from 'react'
 import AxiosService from '../common/Axioservice'
 import { toast } from 'react-toastify';
-import { MdDelete, MdVisibility, MdClose, MdPrint, MdSave } from 'react-icons/md'
+import { useDispatch } from 'react-redux';
+import { deleteBillbyid, settleBillInRedux } from '../common/SaleCart';
+import { MdDelete, MdVisibility, MdClose, MdPrint, MdSave, MdCurrencyRupee } from 'react-icons/md'
 
 function SaleTable({ props }) {
+    const dispatch = useDispatch();
     const [selectedBill, setSelectedBill] = React.useState(null);
     const userData = JSON.parse(localStorage.getItem('data'))
     const isAdmin = userData?.role === 'admin'
 
     const handleDelete = async (id) => {
-        let confirmDelete = window.confirm("CRITICAL ACTION: Are you sure you want to PERMANENTLY DELETE this sale record? This cannot be undone.");
-        if (confirmDelete) {
-            try {
-                let res = await AxiosService.delete(`/saleprint/deletebyid/${id}`)
-                if (res.status === 200) {
-                    toast.success("Sale record purged successfully");
-                    window.location.reload();
-                }
-            } catch (error) {
-                toast.error("Delete operation failed - Check permissions");
-            }
-        }
+        const confirmToast = toast.error(
+            <div className="flex items-start gap-4 p-1">
+                <div className="w-12 h-12 rounded-full bg-error/20 flex items-center justify-center shrink-0">
+                    <MdDelete className="text-error text-xl" />
+                </div>
+                <div className="flex flex-col gap-3">
+                    <div>
+                        <p className="font-black text-[11px] text-surface-900 uppercase tracking-tighter leading-tight">Destroy Record Permanently?</p>
+                        <p className="text-[10px] font-bold text-surface-500 uppercase tracking-wider mt-1">This action cannot be undone on the server</p>
+                    </div>
+                    <div className="flex gap-2">
+                        <button
+                            onClick={async () => {
+                                toast.dismiss(confirmToast);
+                                try {
+                                    let res = await AxiosService.delete(`/saleprint/deletebyid/${id}`)
+                                    if (res.status === 200) {
+                                        toast.success("Record purged successfully");
+                                        dispatch(deleteBillbyid(id));
+                                    }
+                                } catch (e) { toast.error("Delete failed"); }
+                            }}
+                            className="bg-error text-white h-9 px-4 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-error/20 active:scale-95 transition-all"
+                        >
+                            Purge Now
+                        </button>
+                        <button onClick={() => toast.dismiss(confirmToast)} className="h-9 px-4 rounded-xl text-[10px] font-black uppercase tracking-widest text-surface-500 hover:bg-surface-100 transition-all">Dismiss</button>
+                    </div>
+                </div>
+            </div>,
+            { autoClose: false, closeOnClick: false, draggable: false, icon: false }
+        );
     }
 
     const handleSettlePayment = async (bill) => {
-        if (!window.confirm(`Mark Bill ${bill.billNumber || bill._id} as fully Paid?`)) return;
-        try {
-            const res = await AxiosService.put(`/saleprint/editbillbyid/${bill._id}`, {
-                dueAmount: 0,
-                paidAmount: bill.totalAmount || bill.totalBillAmount
-            })
-            if (res.status === 200) {
-                toast.success("Payment settled and synchronized");
-                setSelectedBill(null);
-                window.location.reload();
-            }
-        } catch (error) {
-            toast.error("Cloud synchronization failed for settlement");
-        }
+        const settleToast = toast.info(
+            <div className="flex items-start gap-4 p-1">
+                <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center shrink-0">
+                    <MdCurrencyRupee className="text-primary text-xl" />
+                </div>
+                <div className="flex flex-col gap-3">
+                    <div>
+                        <p className="font-black text-[11px] text-surface-900 uppercase tracking-tighter leading-tight">Settle Pending Due?</p>
+                        <p className="text-[10px] font-bold text-surface-500 uppercase tracking-wider mt-1">Bill: {bill.billNumber || bill._id.slice(-6)} • <span className="text-error">₹{bill.dueAmount}</span></p>
+                    </div>
+                    <div className="flex gap-2">
+                        <button
+                            onClick={async () => {
+                                toast.dismiss(settleToast);
+                                try {
+                                    const res = await AxiosService.put(`/saleprint/editbillbyid/${bill._id}`, {
+                                        dueAmount: 0,
+                                        paidAmount: bill.totalAmount || bill.totalBillAmount
+                                    })
+                                    if (res.status === 200) {
+                                        toast.success("Payment settled successfully");
+                                        dispatch(settleBillInRedux(bill._id));
+                                        setSelectedBill(null);
+                                    }
+                                } catch (error) { toast.error("Settlement failed"); }
+                            }}
+                            className="bg-primary text-white h-9 px-4 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-primary/20 active:scale-95 transition-all"
+                        >
+                            Yes, Settle
+                        </button>
+                        <button onClick={() => toast.dismiss(settleToast)} className="h-9 px-4 rounded-xl text-[10px] font-black uppercase tracking-widest text-surface-500 hover:bg-surface-100 transition-all">Cancel</button>
+                    </div>
+                </div>
+            </div>,
+            { autoClose: false, closeOnClick: false, draggable: false, icon: false }
+        );
     }
 
     return (
@@ -68,7 +113,7 @@ function SaleTable({ props }) {
                                 <td className="text-surface-400 font-bold">{i + 1}</td>
                                 <td className="font-bold text-surface-900 uppercase tracking-tight">
                                     <div className="flex flex-col">
-                                        <span>{item.customerName}</span>
+                                        <span>{item.customerName || 'Retail Customer'}</span>
                                         <span className="text-[10px] text-primary font-extrabold uppercase tracking-widest mt-0.5">
                                             {item.billNumber || `TRN-${item._id.slice(-6).toUpperCase()}`}
                                         </span>
@@ -158,7 +203,7 @@ function SaleTable({ props }) {
                                 <div>
                                     <p className="text-[10px] font-bold text-surface-400 uppercase tracking-widest mb-2">Customer Profile</p>
                                     <p className="text-xl font-display font-bold text-surface-900">{selectedBill.customerName}</p>
-                                    <p className="text-sm font-medium text-surface-500 mt-1">{selectedBill.customerMobile || 'Retail Guest'}</p>
+                                    <p className="text-sm font-medium text-surface-500 mt-1">{selectedBill.customerMobile || 'Retail Customer'}</p>
                                 </div>
                                 <div className="text-right">
                                     <p className="text-[10px] font-bold text-surface-400 uppercase tracking-widest mb-2">Timestamp</p>

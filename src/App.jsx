@@ -28,6 +28,8 @@ import Approval from './Pages/Approval'
 import QuickPriceUpdate from './Pages/QuickPriceUpdate'
 
 
+import Landing from './Pages/Landing'
+
 function App() {
 
 
@@ -37,8 +39,9 @@ function App() {
 
 
         <Routes>
+          <Route path='/' element={<Landing />} />
           <Route path='/signup' element={<SignUp />} />
-          <Route path='/' element={<SignIn />} />
+          <Route path='/login' element={<SignIn />} />
           <Route path='*' element={<Navigate to='/' />} />
           <Route path='/home' element={<ProtectedRoute><AuthContext><Nav /><Home /> <Footer /></AuthContext></ProtectedRoute>} />
           <Route path='/barcodeprint' element={<ProtectedRoute><AuthContext><Nav /><BarCodePrinter /> <Footer /></AuthContext></ProtectedRoute>} />

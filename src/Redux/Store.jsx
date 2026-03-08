@@ -19,7 +19,8 @@ import BalanceSheetReducer from '../common/balanceSheet'
 const persistConfig = {
   key: 'root',
   version: 1,
-  storage
+  storage,
+  blacklist: ['customer', 'product', 'sale', 'balancesheet']
 }
 
 

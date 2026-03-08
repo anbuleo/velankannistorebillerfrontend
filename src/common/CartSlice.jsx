@@ -11,7 +11,7 @@ const createDefaultBill = (id, name) => ({
     name: name || `Counter ${id}`,
     cart: [],
     totalPriceInCart: 0,
-    customeronecart: { name: 'Retail Guest' },
+    customeronecart: { name: 'Retail Customer' },
 });
 
 const initialState = {
@@ -179,7 +179,7 @@ export const cartSlice = createSlice({
             if (bill) {
                 bill.cart = []
                 bill.totalPriceInCart = 0
-                bill.customeronecart = { name: 'Retail Guest' }
+                bill.customeronecart = { name: 'Retail Customer' }
             }
         }
     }

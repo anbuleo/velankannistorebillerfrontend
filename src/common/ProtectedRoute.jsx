@@ -1,19 +1,19 @@
 // import { Children } from 'react'
-import {Navigate} from 'react-router-dom'
+import { Navigate } from 'react-router-dom'
 import Pending from '../Pages/Pending'
 
-function ProtectedRoute({children}) {
+function ProtectedRoute({ children }) {
 
-    const token = sessionStorage.getItem('token')
-    let datas = localStorage.getItem('data')
-    let data = JSON.parse(datas)
-   let con1 = data.status == 'approved'
+  const token = localStorage.getItem('token')
+  let datas = localStorage.getItem('data')
+  let data = datas ? JSON.parse(datas) : null
+  let con1 = data?.status === 'approved'
 
-    if(!token){
-        sessionStorage.clear()
-        localStorage.clear()
-    }
-  return token ? con1? children :<Pending />: <Navigate to='/' />
+  if (!token) {
+    localStorage.clear()
+    return <Navigate to='/login' />
+  }
+  return con1 ? children : <Pending />
 }
 
 export default ProtectedRoute

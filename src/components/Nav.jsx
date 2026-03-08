@@ -1,4 +1,4 @@
-import { useContext, useEffect, useState } from 'react'
+import React, { useContext, useEffect, useState, useMemo } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { UserDataContext } from '../Context/UserDataContext'
 import { toast } from 'react-toastify'
@@ -8,6 +8,10 @@ import {
 } from 'react-icons/md'
 import AxiosService from '../common/Axioservice'
 
+/**
+ * Navigation Bar: Senior-optimized with Strict Memoization.
+ * Prevents full-header re-renders during high-frequency page interactions.
+ */
 function Nav() {
   const { data, isOnline } = useContext(UserDataContext)
   const [pendingCount, setPendingCount] = useState(0)
@@ -23,10 +27,10 @@ function Nav() {
       const getPending = async () => {
         try {
           const res = await AxiosService.get('/auth/getalluser')
-          const pending = res.data.users.filter(u => u.status === 'pending').length
+          const pending = (res.data.users || []).filter(u => u.status === 'pending').length
           setPendingCount(pending)
         } catch (e) {
-          console.error('Failed to get pending users', e)
+          console.error('Approval sync failed', e)
         }
       }
       getPending()
@@ -34,12 +38,14 @@ function Nav() {
   }, [isAdmin])
 
   useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 10)
-    window.addEventListener('scroll', handleScroll)
+    const handleScroll = () => {
+      const isScrolled = window.scrollY > 10;
+      setScrolled(prev => prev !== isScrolled ? isScrolled : prev)
+    }
+    window.addEventListener('scroll', handleScroll, { passive: true })
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
-  // Close mobile menu on route change
   useEffect(() => {
     setMobileMenuOpen(false)
   }, [location.pathname])
@@ -47,72 +53,73 @@ function Nav() {
   const handleLogout = () => {
     sessionStorage.clear()
     localStorage.clear()
-    toast.success('Logged out successfully')
+    toast.success('Session terminated securely')
     navigate('/')
   }
 
-  // --- Premium Grouped Navigation Links ---
-  const adminNav = [
-    {
-      label: 'Core',
-      icon: <MdDashboard />,
-      paths: ['/home', '/instabiller', '/customer'],
-      links: [
-        { name: 'Dashboard', path: '/home' },
-        { name: 'InstaBiller', path: '/instabiller' },
-        { name: 'Customers', path: '/customer' }
-      ]
-    },
-    {
-      label: 'Inventory',
-      icon: <MdInventory />,
-      paths: ['/product', '/category', '/lowstock', '/barcodeprint'],
-      links: [
-        { name: 'Product Catalog', path: '/product' },
-        { name: 'Categories', path: '/category' },
-        { name: 'Daily Price Sync', path: '/market-sync' },
-        { name: 'Low Stock Alert', path: '/lowstock' },
-        { name: 'Barcode Generator', path: '/barcodeprint' }
-      ]
-    },
-    {
-      label: 'Finance',
-      icon: <MdTrendingUp />,
-      paths: ['/audit', '/sale', '/expense'],
-      links: [
-        { name: 'Audit Center', path: '/audit' },
-        { name: 'Sales Log', path: '/sale' },
-        { name: 'Expenses', path: '/expense' }
-      ]
-    },
-    {
-      label: 'Admin',
-      icon: <MdManageAccounts />,
-      paths: ['/user', '/approval'],
-      hasBadge: pendingCount > 0,
-      links: [
-        { name: 'Staff Accounts', path: '/user' },
-        { name: 'Signup Approvals', path: '/approval', badge: pendingCount }
-      ]
-    }
-  ]
+  const navGroups = useMemo(() => {
+    const adminNav = [
+      {
+        label: 'Core',
+        icon: <MdDashboard />,
+        paths: ['/home', '/instabiller', '/customer'],
+        links: [
+          { name: 'Dashboard', path: '/home' },
+          { name: 'InstaBiller', path: '/instabiller' },
+          { name: 'Customers', path: '/customer' }
+        ]
+      },
+      {
+        label: 'Inventory',
+        icon: <MdInventory />,
+        paths: ['/product', '/category', '/lowstock', '/barcodeprint', '/market-sync'],
+        links: [
+          { name: 'Product Catalog', path: '/product' },
+          { name: 'Categories', path: '/category' },
+          { name: 'Daily Price Sync', path: '/market-sync' },
+          { name: 'Low Stock Alert', path: '/lowstock' },
+          { name: 'Barcode Generator', path: '/barcodeprint' }
+        ]
+      },
+      {
+        label: 'Finance',
+        icon: <MdTrendingUp />,
+        paths: ['/audit', '/sale', '/expense'],
+        links: [
+          { name: 'Audit Center', path: '/audit' },
+          { name: 'Sales Log', path: '/sale' },
+          { name: 'Expenses', path: '/expense' }
+        ]
+      },
+      {
+        label: 'Admin',
+        icon: <MdManageAccounts />,
+        paths: ['/user', '/approval'],
+        hasBadge: pendingCount > 0,
+        links: [
+          { name: 'Staff Accounts', path: '/user' },
+          { name: 'Signup Approvals', path: '/approval', badge: pendingCount }
+        ]
+      }
+    ]
 
-  const staffNav = [
-    {
-      label: 'Workspace',
-      icon: <MdDashboard />,
-      paths: ['/home', '/instabiller', '/sale', '/product', '/lowstock'],
-      links: [
-        { name: 'Dashboard', path: '/home' },
-        { name: 'InstaBiller', path: '/instabiller' },
-        { name: 'Sales Log', path: '/sale' },
-        { name: 'Browse Inventory', path: '/product' },
-        { name: 'Low Stock Status', path: '/lowstock' }
-      ]
-    }
-  ]
+    const staffNav = [
+      {
+        label: 'Workspace',
+        icon: <MdDashboard />,
+        paths: ['/home', '/instabiller', '/sale', '/product', '/lowstock'],
+        links: [
+          { name: 'Dashboard', path: '/home' },
+          { name: 'InstaBiller', path: '/instabiller' },
+          { name: 'Sales Log', path: '/sale' },
+          { name: 'Browse Inventory', path: '/product' },
+          { name: 'Low Stock Status', path: '/lowstock' }
+        ]
+      }
+    ]
 
-  const navGroups = isAdmin ? adminNav : staffNav
+    return isAdmin ? adminNav : staffNav
+  }, [isAdmin, pendingCount])
 
   return (
     <>
@@ -120,7 +127,6 @@ function Nav() {
         <div className="container mx-auto px-4">
           <div className={`navbar glass-card px-4 lg:px-6 transition-all duration-300 ${scrolled ? 'border-transparent shadow-none bg-transparent min-h-[56px]' : 'min-h-[64px]'}`}>
 
-            {/* Left: Brand & Mobile Toggle */}
             <div className="flex-1 flex items-center gap-3">
               <div className="lg:hidden">
                 <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="btn btn-ghost btn-circle hover:bg-surface-100 transition-colors">
@@ -146,7 +152,6 @@ function Nav() {
               </Link>
             </div>
 
-            {/* Middle: Desktop Navigation Menus */}
             <div className="hidden lg:flex flex-none justify-center">
               <ul className="flex items-center gap-2">
                 {navGroups.map((group, i) => {
@@ -160,15 +165,12 @@ function Nav() {
                         {group.icon}
                         {group.label}
                         <MdKeyboardArrowDown className="text-lg opacity-50 group-hover/nav:rotate-180 transition-transform duration-300" />
-
-                        {/* Notification Dot on Parent */}
                         {group.hasBadge && (
                           <span className="absolute top-1.5 right-2 w-2 h-2 rounded-full bg-error ring-2 ring-white animate-pulse" />
                         )}
                       </button>
 
-                      {/* Dropdown Card */}
-                      <div className="absolute top-full left-0 pt-2 opacity-0 translate-y-2 pointer-events-none group-hover/nav:opacity-100 group-hover/nav:translate-y-0 group-hover/nav:pointer-events-auto transition-all duration-300 z-50">
+                      <div className="absolute top-full left-1/2 -translate-x-1/2 pt-2 opacity-0 translate-y-2 pointer-events-none group-hover/nav:opacity-100 group-hover/nav:translate-y-0 group-hover/nav:pointer-events-auto transition-all duration-300 z-50">
                         <div className="glass-card min-w-[220px] p-2 flex flex-col gap-1 border border-surface-200/50 shadow-2xl shadow-surface-900/10 rounded-2xl">
                           {group.links.map(link => (
                             <Link
@@ -196,7 +198,6 @@ function Nav() {
               </ul>
             </div>
 
-            {/* Right: User Profile Menu */}
             <div className="flex-1 flex justify-end gap-2">
               <div className="dropdown dropdown-end">
                 <div tabIndex={0} role="button" className="btn btn-ghost p-1 pr-3 hover:bg-surface-100 rounded-2xl flex items-center gap-3 transition-colors">
@@ -229,13 +230,11 @@ function Nav() {
         </div>
       </div>
 
-      {/* Mobile Drawer (Glassmorphism overlap) */}
       <div className={`fixed inset-0 z-[100] bg-surface-900/40 backdrop-blur-sm transition-opacity duration-300 lg:hidden ${mobileMenuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`} onClick={() => setMobileMenuOpen(false)}>
         <div
           className={`absolute top-0 left-0 bottom-0 w-[280px] bg-white shadow-2xl transition-transform duration-400 ease-out flex flex-col ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}
           onClick={e => e.stopPropagation()}
         >
-          {/* Drawer Header */}
           <div className="h-20 border-b border-surface-100 flex items-center px-6 justify-between bg-surface-50">
             <div className="flex items-center gap-3 group">
               <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center text-white shadow-lg shadow-primary/30">
@@ -252,7 +251,6 @@ function Nav() {
             </div>
           </div>
 
-          {/* Drawer Links */}
           <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-2">
             {navGroups.map((group, i) => (
               <div key={i} className="mb-4">
@@ -286,7 +284,6 @@ function Nav() {
             ))}
           </div>
 
-          {/* Drawer Footer */}
           <div className="p-4 border-t border-surface-100 bg-surface-50">
             <button onClick={handleLogout} className="w-full btn btn-ghost text-error bg-error/10 hover:bg-error hover:text-white rounded-xl font-bold transition-all border-none">
               <MdLogout className="text-xl" /> Sign Out Device
@@ -295,9 +292,9 @@ function Nav() {
         </div>
       </div>
 
-      <div className="h-24"></div> {/* Spacer for fixed nav */}
+      <div className="h-24"></div>
     </>
   )
 }
 
-export default Nav
+export default React.memo(Nav)

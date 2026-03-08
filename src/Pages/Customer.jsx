@@ -2,11 +2,34 @@ import React, { useState } from 'react'
 import { useSelector } from 'react-redux'
 import CustomerTable from '../components/CustomerTable'
 import { Link } from 'react-router-dom'
-import { MdPersonAdd, MdSearch, MdPeople, MdAccountBalanceWallet } from 'react-icons/md'
+import AxiosService from '../common/Axioservice'
+import { toast } from 'react-toastify'
+import GetAllProductHook from '../Hooks/GetAllProductHook'
+import { MdPersonAdd, MdSearch, MdPeople, MdAccountBalanceWallet, MdSync } from 'react-icons/md'
 
 function Customer() {
   const { customer } = useSelector((state) => state.customer)
   const [searchTerm, setSearchTerm] = useState('')
+  const [syncing, setSyncing] = useState(false)
+  const { getUSer } = GetAllProductHook()
+
+  const userData = JSON.parse(localStorage.getItem('data'))
+  const isAdmin = userData?.role === 'admin'
+
+  const handleSync = async () => {
+    setSyncing(true)
+    try {
+      const res = await AxiosService.post('/saleprint/recalculate')
+      if (res.status === 200) {
+        toast.success('Financial records reconciled successfully')
+        await getUSer() // Refresh data
+      }
+    } catch (error) {
+      toast.error('Ledger reconciliation failed')
+    } finally {
+      setSyncing(false)
+    }
+  }
 
   const filteredCustomers = (customer || []).filter(c =>
     c.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -33,15 +56,28 @@ function Customer() {
               <p className="text-xl font-display font-bold text-surface-900">{customer?.length || 0}</p>
             </div>
           </div>
-          <div className="glass-card px-6 py-4 border-l-4 border-error flex items-center gap-4">
-            <div className="w-10 h-10 rounded-xl bg-error/10 text-error flex items-center justify-center text-xl">
-              <MdAccountBalanceWallet />
+          {isAdmin && (
+            <div className="glass-card px-6 py-4 border-l-4 border-error flex items-center gap-4">
+              <div className="w-10 h-10 rounded-xl bg-error/10 text-error flex items-center justify-center text-xl">
+                <MdAccountBalanceWallet />
+              </div>
+              <div>
+                <p className="text-[10px] font-bold text-surface-400 uppercase tracking-widest leading-none mb-1">Ledger Liability</p>
+                <p className="text-xl font-display font-bold text-error">₹{totalOutstanding.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</p>
+              </div>
             </div>
-            <div>
-              <p className="text-[10px] font-bold text-surface-400 uppercase tracking-widest leading-none mb-1">Ledger Liability</p>
-              <p className="text-xl font-display font-bold text-error">₹{totalOutstanding}</p>
-            </div>
-          </div>
+          )}
+          {isAdmin && (
+            <button
+              onClick={handleSync}
+              disabled={syncing}
+              className={`h-[68px] px-6 rounded-2xl flex items-center gap-3 font-bold uppercase text-[10px] tracking-widest transition-all ${syncing ? 'bg-surface-200 text-surface-400' : 'bg-primary/5 text-primary border-2 border-primary/10 hover:bg-primary hover:text-white'
+                }`}
+            >
+              <MdSync className={`text-xl ${syncing ? 'animate-spin' : ''}`} />
+              {syncing ? 'Reconciling Ledger...' : 'Sync & Repair Ledger'}
+            </button>
+          )}
           <Link to="/createcustomer" className="premium-button flex items-center gap-2 h-[68px] px-8">
             <MdPersonAdd className="text-2xl" /> Register Profile
           </Link>

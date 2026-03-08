@@ -52,7 +52,7 @@ function InstaBiller() {
     return bills.find(b => b.id === activeBillId) || bills[0];
   }, [bills, activeBillId]);
 
-  const { cart = [], totalPriceInCart = 0, customeronecart = { name: 'Retail Guest' } } = currentBill || {};
+  const { cart = [], totalPriceInCart = 0, customeronecart = { name: 'Retail Customer' } } = currentBill || {};
 
   const { createBill } = genrateBill()
 
@@ -265,7 +265,7 @@ function InstaBiller() {
                   type="text"
                   placeholder="Customer Search..."
                   className="w-full h-16 pl-14 pr-4 bg-surface-50 border-2 border-surface-100 rounded-2xl font-bold focus:bg-white focus:border-primary transition-all outline-none"
-                  value={customerSearch || (customeronecart?.name !== 'Retail Guest' ? customeronecart.name : '')}
+                  value={customerSearch || (customeronecart?.name !== 'Retail Customer' ? customeronecart.name : '')}
                   onChange={(e) => {
                     setCustomerSearch(e.target.value);
                     setShowCustomerResults(true);
@@ -275,7 +275,7 @@ function InstaBiller() {
                 {showCustomerResults && (
                   <div className="absolute top-[110%] left-0 right-0 glass-card shadow-2xl border overflow-hidden z-[100]">
                     <button
-                      onClick={() => { dispatch(addCustomerBillOne({ name: 'Retail Guest' })); setShowCustomerResults(false); setCustomerSearch(''); }}
+                      onClick={() => { dispatch(addCustomerBillOne({ name: 'Retail Customer' })); setShowCustomerResults(false); setCustomerSearch(''); }}
                       className="w-full px-6 py-3 text-left font-black text-[10px] uppercase text-surface-400 hover:bg-surface-50 border-b"
                     >
                       Guest (Default)
@@ -420,8 +420,8 @@ function InstaBiller() {
                   onChange={(e) => setPaymentStatus(e.target.value)}
                 >
                   <option value="paid" className="text-surface-900">Instant Settlement</option>
-                  <option value="pending" className="text-surface-900" disabled={customeronecart?.name === 'Retail Guest'}>Convert to Credit</option>
-                  <option value="partial" className="text-surface-900" disabled={customeronecart?.name === 'Retail Guest'}>Split Payment</option>
+                  <option value="pending" className="text-surface-900" disabled={customeronecart?.name === 'Retail Customer'}>Convert to Credit</option>
+                  <option value="partial" className="text-surface-900" disabled={customeronecart?.name === 'Retail Customer'}>Split Payment</option>
                 </select>
               </div>
               <div className="text-right">

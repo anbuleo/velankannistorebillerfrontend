@@ -32,7 +32,7 @@ const signInHook = () => {
                     return
                 }
 
-                sessionStorage.setItem('token', res.data.token)
+                localStorage.setItem('token', res.data.token)
                 localStorage.setItem('data', JSON.stringify(userData))
 
                 setCode(res.status)

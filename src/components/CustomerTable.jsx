@@ -10,6 +10,8 @@ function CustomerTable({ filteredData }) {
     const [expandedRows, setExpandedRows] = useState({});
     const { customer: allCustomers } = useSelector((state) => state.customer);
     const displayList = filteredData || allCustomers;
+    const userData = JSON.parse(localStorage.getItem('data'));
+    const isAdmin = userData?.role === 'admin';
 
     const toggleRow = (id) => {
         setExpandedRows(prev => ({ ...prev, [id]: !prev[id] }));
@@ -17,14 +19,13 @@ function CustomerTable({ filteredData }) {
 
     const exportToPDF = () => {
         const doc = new jsPDF();
-        doc.text("Customer Directory", 14, 15);
         const tableColumn = ["Name", "Mobile", "Aadhaar", "Location", "Balance"];
         const tableRows = displayList.map((c) => [
             c.name,
             c.mobile,
-            c.Aadhaar,
-            c.location,
-            `Rs.${c.balance}`
+            c.aadhaar || 'NO_ID',
+            c.location || 'NOT SPECIFIED',
+            `Rs.${Number(c.balance || 0).toFixed(2)}`
         ]);
         doc.autoTable({ head: [tableColumn], body: tableRows, startY: 20 });
         doc.save("Customer_Report.pdf");
@@ -34,9 +35,9 @@ function CustomerTable({ filteredData }) {
         const worksheet = XLSX.utils.json_to_sheet(displayList.map(c => ({
             Name: c.name,
             Mobile: c.mobile,
-            Aadhaar: c.Aadhaar,
-            Location: c.location,
-            Balance: c.balance
+            Aadhaar: c.aadhaar || 'NO_ID',
+            Location: c.location || 'NOT SPECIFIED',
+            Balance: Number(c.balance || 0).toFixed(2)
         })));
         const workbook = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(workbook, worksheet, "Customers");
@@ -70,7 +71,7 @@ function CustomerTable({ filteredData }) {
                             <th>Customer Identity</th>
                             <th className="text-center">Reference</th>
                             <th>Primary Location</th>
-                            <th className="text-right">Ledger Balance</th>
+                            {isAdmin && <th className="text-right">Ledger Balance</th>}
                             <th className="text-center w-24">Actions</th>
                         </tr>
                     </thead>
@@ -85,17 +86,19 @@ function CustomerTable({ filteredData }) {
                                     </td>
                                     <td className="text-center">
                                         <span className="badge badge-outline border-surface-200 text-surface-400 font-medium text-[10px] uppercase tracking-wider px-2">
-                                            {c.Aadhaar || 'NO_ID'}
+                                            {c.aadhaar || 'NO_ID'}
                                         </span>
                                     </td>
                                     <td>
-                                        <span className="text-xs font-medium text-surface-600 uppercase italic opacity-70">{c.location}</span>
+                                        <span className="text-xs font-medium text-surface-600 uppercase italic opacity-70">{c.location || 'NOT SPECIFIED'}</span>
                                     </td>
-                                    <td className="text-right">
-                                        <span className={`text-xl font-display font-bold leading-none ${c.balance > 0 ? 'text-error' : 'text-success'}`}>
-                                            ₹{c.balance}
-                                        </span>
-                                    </td>
+                                    {isAdmin && (
+                                        <td className="text-right">
+                                            <span className={`text-xl font-display font-bold leading-none ${Number(c.balance) > 0 ? 'text-error' : 'text-success'}`}>
+                                                ₹{Number(c.balance || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                                            </span>
+                                        </td>
+                                    )}
                                     <td className="text-center">
                                         <button
                                             onClick={() => toggleRow(c._id)}
@@ -120,13 +123,43 @@ function CustomerTable({ filteredData }) {
                                                             <p className="text-[10px] font-bold text-surface-400 uppercase leading-none mb-1">Mobile Contact</p>
                                                             <p className="font-bold text-surface-900">{c.mobile}</p>
                                                         </div>
+                                                        <div>
+                                                            <p className="text-[10px] font-bold text-surface-400 uppercase leading-none mb-1">Primary Location</p>
+                                                            <p className="font-bold text-surface-900 uppercase italic opacity-70">{c.location || 'NOT SPECIFIED'}</p>
+                                                        </div>
+                                                        <div>
+                                                            <p className="text-[10px] font-bold text-surface-400 uppercase leading-none mb-1">Identity Reference (AADHAAR/ID)</p>
+                                                            <p className="font-bold text-surface-900">{c.aadhaar || 'NO_ID'}</p>
+                                                        </div>
                                                     </div>
                                                 </div>
-                                                <div className="w-full md:w-64 glass-card p-6 border-none bg-primary/5 text-primary">
-                                                    <h5 className="text-[10px] font-bold text-primary-400 uppercase tracking-widest mb-4">Financial Overview</h5>
-                                                    <p className="text-[10px] font-bold uppercase leading-none mb-1 opacity-70">Current Outstanding</p>
-                                                    <p className="text-3xl font-display font-bold">₹{c.balance}</p>
-                                                </div>
+                                                {isAdmin && (
+                                                    <div className="w-full md:w-80 glass-card p-6 border-none bg-primary/5 text-primary">
+                                                        <h5 className="text-[10px] font-bold text-primary-400 uppercase tracking-widest mb-4">Financial Overview</h5>
+                                                        <div className="space-y-4">
+                                                            <div>
+                                                                <p className="text-[10px] font-bold uppercase leading-none mb-1 opacity-70">Current Outstanding</p>
+                                                                <p className="text-3xl font-display font-bold">₹{Number(c.balance || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</p>
+                                                            </div>
+                                                            <div className="grid grid-cols-2 gap-4 pt-4 border-t border-primary/10">
+                                                                <div>
+                                                                    <p className="text-[9px] font-bold uppercase leading-none mb-1 opacity-60">Lifetime Purchases</p>
+                                                                    <p className="text-sm font-bold">₹{Number(c.totalPurchases || 0).toLocaleString('en-IN')}</p>
+                                                                </div>
+                                                                <div>
+                                                                    <p className="text-[9px] font-bold uppercase leading-none mb-1 opacity-60">Total Settled</p>
+                                                                    <p className="text-sm font-bold">₹{Number(c.totalPayments || 0).toLocaleString('en-IN')}</p>
+                                                                </div>
+                                                            </div>
+                                                            <button
+                                                                onClick={() => window.location.href = `/sale?customerId=${c._id}`}
+                                                                className="btn btn-primary btn-sm w-full mt-2 rounded-lg font-bold uppercase tracking-wider text-[10px]"
+                                                            >
+                                                                View Activity Logs
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                )}
                                             </div>
                                         </td>
                                     </tr>

@@ -12,7 +12,7 @@ function QuickPriceUpdate() {
     const { product, getUSer } = GetAllProductHook()
     const [prices, setPrices] = useState({}) // Stores { id: { price, cost } }
     const [searchTerm, setSearchTerm] = useState('')
-    const [selectedCategory, setSelectedCategory] = useState('Vegetables')
+    const [selectedCategory, setSelectedCategory] = useState('')
     const [loading, setLoading] = useState(false)
 
     useEffect(() => {
@@ -187,8 +187,8 @@ function QuickPriceUpdate() {
                                                 <input
                                                     type="number"
                                                     className={`w-full h-10 pl-9 pr-3 rounded-xl border-2 font-display font-black text-center text-sm transition-all focus:outline-none ${isCostChanged
-                                                            ? 'border-primary bg-white text-primary shadow-lg shadow-primary/10'
-                                                            : 'border-surface-100 bg-surface-50 text-surface-400'
+                                                        ? 'border-primary bg-white text-primary shadow-lg shadow-primary/10'
+                                                        : 'border-surface-100 bg-surface-50 text-surface-400'
                                                         }`}
                                                     value={currentData.cost || ''}
                                                     onChange={(e) => handlePriceChange(p._id, 'cost', e.target.value)}
@@ -203,8 +203,8 @@ function QuickPriceUpdate() {
                                                 <input
                                                     type="number"
                                                     className={`w-full h-10 pl-9 pr-3 rounded-xl border-2 font-display font-black text-center text-sm transition-all focus:outline-none ${isPriceChanged
-                                                            ? 'border-primary bg-white text-primary shadow-lg shadow-primary/10'
-                                                            : 'border-surface-100 bg-surface-50 text-surface-900'
+                                                        ? 'border-primary bg-white text-primary shadow-lg shadow-primary/10'
+                                                        : 'border-surface-100 bg-surface-50 text-surface-900'
                                                         }`}
                                                     value={currentData.price || ''}
                                                     onChange={(e) => handlePriceChange(p._id, 'price', e.target.value)}

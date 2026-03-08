@@ -15,46 +15,65 @@ function OfflineSyncManager() {
     const [isSyncing, setIsSyncing] = useState(false);
 
     useEffect(() => {
+        let isProcessing = false;
+
         const syncData = async () => {
-            if (pendingBills.length === 0 || !navigator.onLine || isSyncing) return;
+            if (pendingBills.length === 0 || !navigator.onLine || isSyncing || isProcessing) return;
 
+            isProcessing = true;
             setIsSyncing(true);
-            toast.info(`Syncing ${pendingBills.length} pending transactions...`, { icon: <MdCloudSync className="animate-spin" /> });
 
-            for (const bill of pendingBills) {
+            // Sequential processing to preserve order and avoid server stress
+            for (const bill of [...pendingBills]) {
                 try {
                     const res = await AxiosService.post('/saleprint/printbill', bill);
                     if (res.status === 201 || res.status === 200) {
                         dispatch(removeQueuedBill(bill.billNumber));
                     }
                 } catch (e) {
-                    console.error("Delayed sync failed for bill:", bill.billNumber, e);
-                    // Keep in queue for next attempt
+                    console.error(`Sync failed for ${bill.billNumber}:`, e.response?.data?.message || e.message);
+                    // Critical items like bills shouldn't stop others unless it's a server-wide error
                 }
             }
+
             setIsSyncing(false);
+            isProcessing = false;
         };
 
-        // Attempt sync every 30 seconds if online
-        const interval = setInterval(syncData, 30000);
-        // Also attempt immediately on status change
+        // Aggressive sync on reconnect, relaxed polling
+        const interval = setInterval(syncData, 60000);
         window.addEventListener('online', syncData);
+
+        // Initial attempt
+        syncData();
 
         return () => {
             clearInterval(interval);
             window.removeEventListener('online', syncData);
         };
-    }, [pendingBills, dispatch]);
+    }, [pendingBills.length, isSyncing]); // Depend on length to trigger on new bill
 
     if (pendingBills.length === 0) return null;
 
     return (
-        <div className="fixed bottom-6 left-6 z-[100] animate-bounce">
-            <div className="bg-surface-900 text-white px-4 py-2 rounded-full shadow-2xl flex items-center gap-2 border border-primary/30">
-                <MdCloudSync className={`${isSyncing ? 'animate-spin text-primary' : 'text-primary'}`} />
-                <span className="text-[10px] font-black uppercase tracking-widest">
-                    {pendingBills.length} Pending Sync
-                </span>
+        <div className="fixed bottom-8 left-8 z-[100] group">
+            <div className={`relative flex items-center gap-4 bg-surface-900 text-white px-5 py-3 rounded-2xl shadow-2xl border-2 transition-all duration-500 ${isSyncing ? 'border-primary animate-pulse w-56' : 'border-surface-700 w-48'}`}>
+                <div className="relative">
+                    <MdCloudSync className={`text-2xl ${isSyncing ? 'animate-spin text-primary' : 'text-surface-400'}`} />
+                    {pendingBills.length > 0 && (
+                        <span className="absolute -top-2 -right-2 bg-error text-[8px] font-black w-4 h-4 rounded-full flex items-center justify-center border-2 border-surface-900">
+                            {pendingBills.length}
+                        </span>
+                    )}
+                </div>
+                <div className="flex flex-col">
+                    <span className="text-[10px] font-black uppercase tracking-widest leading-none">
+                        {isSyncing ? 'Syncing Sales...' : 'Offline Buffer'}
+                    </span>
+                    <span className="text-[8px] font-bold text-surface-400 mt-1 uppercase">
+                        {isSyncing ? 'DO NOT CLOSE APP' : 'Waiting for connection'}
+                    </span>
+                </div>
             </div>
         </div>
     );

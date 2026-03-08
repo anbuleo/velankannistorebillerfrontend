@@ -166,7 +166,7 @@ function SignUp() {
 
           <div className="mt-10 text-center">
             <p className="text-sm text-surface-500">
-              Already registered? <Link to="/" className="font-bold text-primary hover:underline">Sign in instead</Link>
+              Already registered? <Link to="/login" className="font-bold text-primary hover:underline">Sign in instead</Link>
             </p>
           </div>
         </div>

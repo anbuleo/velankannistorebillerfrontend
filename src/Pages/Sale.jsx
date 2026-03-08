@@ -1,39 +1,52 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useMemo } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
+import { useLocation } from 'react-router-dom';
 import SaleTable from '../components/SaleTable';
 import useSaleTableDataHook from '../Hooks/SaleTableDataHook'
+import useGetAllProductHook from '../Hooks/GetAllProductHook';
 import { totalByCustomer } from '../common/SaleCart';
 import { toast } from 'react-toastify';
 import AxiosService from '../common/Axioservice';
-import { HiOutlineCalendar, HiOutlineFunnel, HiOutlineMagnifyingGlass, HiOutlineCurrencyRupee } from 'react-icons/hi2'
+import { MdCalendarToday, MdFilterList, MdSearch, MdCurrencyRupee, MdRefresh } from 'react-icons/md'
 
+/**
+ * Sale Ledger: Senior-optimized with memoized stats and proactive fetching.
+ */
 function Sale() {
+    const { getUSer, loading: fetchingData } = useGetAllProductHook();
+    const location = useLocation();
+    const queryParams = new URLSearchParams(location.search);
+    const initialCustomerId = queryParams.get('customerId');
+
     const [startDate, setStartDate] = useState("");
     const [endDate, setEndDate] = useState("");
+    const [searchInput, setSearchInput] = useState("");
+
     const { customerBill, getBillOfuser, setCustomerBill } = useSaleTableDataHook()
-    const { bills, totalBllAmount, totalAmountByCustomer } = useSelector(state => state.sale)
+    const { bills, totalBllAmount } = useSelector(state => state.sale)
     const { customer } = useSelector(state => state.customer)
-    const [tableData, setTableData] = useState([])
+    const [serverFilteredData, setServerFilteredData] = useState(null)
     const dispatch = useDispatch()
 
     useEffect(() => {
-        setTableData(bills)
-    }, [bills])
+        if (bills.length === 0) {
+            getUSer('bills');
+        }
+    }, [getUSer, bills.length])
 
     useEffect(() => {
-        if (customerBill.length > 0 && !startDate && !endDate) {
-            setTableData(customerBill)
+        if (initialCustomerId && bills.length > 0) {
+            handleChangeCustomer(initialCustomerId);
         }
-    }, [customerBill])
+    }, [bills.length, initialCustomerId])
 
     const handleChangeCustomer = async (id) => {
+        setServerFilteredData(null);
         if (id === 'all') {
             setCustomerBill([])
-            setTableData([...bills])
             dispatch(totalByCustomer('all'))
         } else {
             await getBillOfuser(id)
-            setTableData(customerBill)
         }
     }
 
@@ -42,20 +55,48 @@ function Sale() {
             if (startDate && endDate) {
                 const res = await AxiosService.put('/saleprint/getsalebydate', { startDate, endDate })
                 if (res.status === 200) {
-                    setTableData(res?.data?.sale)
+                    setServerFilteredData(res?.data?.sale)
+                    toast.success('Ledger filtered by date');
                 }
             } else {
-                toast.warning('Please enter both start and end dates')
+                toast.warning('Enter date range')
             }
         } catch (error) {
-            toast.error('Date search failed')
+            toast.error('Date filter failed')
         }
     }
 
-    const totalTransactions = tableData.length;
-    const avgTransaction = totalTransactions > 0 ? (tableData.reduce((acc, cur) => acc + Number(cur.totalAmount || 0), 0) / totalTransactions).toFixed(2) : 0;
-    const cashSales = tableData.filter(t => (t.paymentType || '').toLowerCase() === 'cash').length;
-    const onlineSales = tableData.filter(t => (t.paymentType || '').toLowerCase() === 'online').length;
+    // Senior Optimization: Memoize the base data before applying search filters
+    const baseData = useMemo(() => {
+        return serverFilteredData || (customerBill.length > 0 ? customerBill : bills);
+    }, [serverFilteredData, customerBill, bills]);
+
+    // Senior Optimization: Memoize filtered view based on search input
+    const tableData = useMemo(() => {
+        const term = searchInput.toLowerCase().trim();
+        if (!term) return baseData;
+
+        return baseData.filter(b =>
+            (b.customerName || '').toLowerCase().includes(term) ||
+            (b.paymentMethod || '').toLowerCase().includes(term) ||
+            (b.billNumber || '').toLowerCase().includes(term) ||
+            (b._id || '').toLowerCase().includes(term)
+        );
+    }, [baseData, searchInput]);
+
+    // Senior Optimization: Compute stats ONLY when tableData changes
+    const stats = useMemo(() => {
+        const totalTransactions = tableData.length;
+        const totalRevenue = tableData.reduce((acc, cur) => acc + Number(cur.totalAmount || 0), 0);
+        const avgTransaction = totalTransactions > 0 ? (totalRevenue / totalTransactions).toFixed(2) : 0;
+        const cashSales = tableData.filter(t => (t.paymentType || '').toLowerCase() === 'cash').length;
+        const onlineSales = tableData.filter(t => (t.paymentType || '').toLowerCase() === 'online').length;
+
+        return { totalTransactions, avgTransaction, cashSales, onlineSales, totalRevenue };
+    }, [tableData]);
+
+    const userData = JSON.parse(localStorage.getItem('data'))
+    const isAdmin = userData?.role === 'admin'
 
     return (
         <div className="container mx-auto px-4 py-8 fade-in min-h-screen">
@@ -65,26 +106,28 @@ function Sale() {
                     <p className="text-surface-500 font-medium">Business intelligence and transaction forensics</p>
                 </div>
 
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 w-full xl:w-auto">
-                    <div className="glass-card p-4 border-l-4 border-primary">
-                        <p className="text-[10px] font-bold text-surface-400 uppercase tracking-widest mb-1">Revenue</p>
-                        <p className="text-xl font-display font-bold text-surface-900">₹{totalBllAmount || '0'}</p>
+                {isAdmin && (
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 w-full xl:w-auto">
+                        <div className="glass-card p-4 border-l-4 border-primary">
+                            <p className="text-[10px] font-bold text-surface-400 uppercase tracking-widest mb-1">Period Revenue</p>
+                            <p className="text-xl font-display font-bold text-surface-900">₹{stats.totalRevenue}</p>
+                        </div>
+                        <div className="glass-card p-4 border-l-4 border-indigo-500">
+                            <p className="text-[10px] font-bold text-surface-400 uppercase tracking-widest mb-1">Average</p>
+                            <p className="text-xl font-display font-bold text-surface-900">₹{stats.avgTransaction}</p>
+                        </div>
+                        <div className="glass-card p-4 border-l-4 border-emerald-500">
+                            <p className="text-[10px] font-bold text-surface-400 uppercase tracking-widest mb-1">Volume</p>
+                            <p className="text-xl font-display font-bold text-surface-900">{stats.totalTransactions} TX</p>
+                        </div>
+                        <div className="glass-card p-4 border-l-4 border-amber-500">
+                            <p className="text-[10px] font-bold text-surface-400 uppercase tracking-widest mb-1">Cash/Online</p>
+                            <p className="text-lg font-display font-bold text-surface-900 flex items-center gap-2">
+                                {stats.cashSales}<span className="text-surface-300 text-xs">/</span>{stats.onlineSales}
+                            </p>
+                        </div>
                     </div>
-                    <div className="glass-card p-4 border-l-4 border-indigo-500">
-                        <p className="text-[10px] font-bold text-surface-400 uppercase tracking-widest mb-1">Average</p>
-                        <p className="text-xl font-display font-bold text-surface-900">₹{avgTransaction}</p>
-                    </div>
-                    <div className="glass-card p-4 border-l-4 border-emerald-500">
-                        <p className="text-[10px] font-bold text-surface-400 uppercase tracking-widest mb-1">Volume</p>
-                        <p className="text-xl font-display font-bold text-surface-900">{totalTransactions} TX</p>
-                    </div>
-                    <div className="glass-card p-4 border-l-4 border-amber-500">
-                        <p className="text-[10px] font-bold text-surface-400 uppercase tracking-widest mb-1">Cash/Online</p>
-                        <p className="text-lg font-display font-bold text-surface-900 flex items-center gap-2">
-                            {cashSales}<span className="text-surface-300 text-xs">/</span>{onlineSales}
-                        </p>
-                    </div>
-                </div>
+                )}
             </div>
 
             <div className="glass-card mb-8 p-6">
@@ -93,23 +136,13 @@ function Sale() {
                         <div className="flex-1 min-w-[300px]">
                             <label className="block text-xs font-bold text-surface-400 uppercase tracking-widest mb-2 px-1">Detailed Search</label>
                             <div className="relative">
-                                <HiOutlineMagnifyingGlass className="absolute left-4 top-1/2 -translate-y-1/2 text-surface-400" />
+                                <MdSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-surface-400" />
                                 <input
                                     type="text"
-                                    placeholder="Search by Customer Name or Payment Method..."
+                                    placeholder="Search by Customer, Method, or Invoice..."
                                     className="premium-input w-full h-11 pl-12 pr-4 bg-surface-50 focus:bg-white text-sm font-medium border-2 focus:border-primary/50"
-                                    onChange={(e) => {
-                                        const term = e.target.value.toLowerCase();
-                                        if (!term) {
-                                            setTableData(bills);
-                                        } else {
-                                            const filtered = (bills || []).filter(b =>
-                                                (b.customerName || '').toLowerCase().includes(term) ||
-                                                (b.paymentMethod || '').toLowerCase().includes(term)
-                                            );
-                                            setTableData(filtered);
-                                        }
-                                    }}
+                                    value={searchInput}
+                                    onChange={(e) => setSearchInput(e.target.value)}
                                 />
                             </div>
                         </div>
@@ -148,9 +181,18 @@ function Sale() {
                             </div>
                             <button
                                 onClick={searchByDate}
-                                className="btn btn-primary h-11 px-8 rounded-xl shadow-premium border-none gap-2 flex-grow sm:flex-grow-0"
+                                className="btn btn-primary h-11 px-6 rounded-xl shadow-premium border-none gap-2 flex-grow sm:flex-grow-0"
                             >
-                                <HiOutlineFunnel /> Filter
+                                <MdFilterList /> Filter
+                            </button>
+                            <button
+                                onClick={() => {
+                                    setServerFilteredData(null);
+                                    getUSer('bills');
+                                }}
+                                className={`btn btn-square h-11 w-11 rounded-xl bg-surface-100 hover:bg-surface-200 border-none ${fetchingData ? 'animate-spin opacity-50' : ''}`}
+                            >
+                                <MdRefresh className="text-lg text-surface-600" />
                             </button>
                         </div>
                     </div>
