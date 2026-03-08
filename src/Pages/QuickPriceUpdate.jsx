@@ -5,11 +5,13 @@ import {
     MdCurrencyRupee, MdSave, MdArrowBack, MdSync,
     MdSearch, MdCategory, MdInfo, MdTrendingUp, MdTrendingDown, MdLocalShipping
 } from 'react-icons/md'
+import { useSelector } from 'react-redux'
 import AxiosService from '../common/Axioservice'
 import GetAllProductHook from '../Hooks/GetAllProductHook'
 
 function QuickPriceUpdate() {
-    const { product, getUSer } = GetAllProductHook()
+    const { getUSer } = GetAllProductHook()
+    const { product } = useSelector(state => state.product)
     const [prices, setPrices] = useState({}) // Stores { id: { price, cost } }
     const [searchTerm, setSearchTerm] = useState('')
     const [selectedCategory, setSelectedCategory] = useState('')
