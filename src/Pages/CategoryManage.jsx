@@ -101,7 +101,7 @@ function CategoryManage() {
                         </div>
                     ) : (
                         <div className="grid grid-cols-1 gap-4">
-                            {categories.map((cat) => (
+                            {categories?.map((cat) => (
                                 <div key={cat._id} className="glass-card p-6 flex items-center justify-between hover:border-primary/30 transition-all duration-300 group">
                                     <div className="flex items-center gap-5">
                                         <div className="w-12 h-12 rounded-xl bg-surface-100 flex items-center justify-center text-surface-400 group-hover:bg-primary group-hover:text-white transition-all duration-300">

@@ -212,19 +212,19 @@ function SaleTable({ props }) {
                                 </div>
                             </div>
 
-                            <table className="w-full mb-8">
+                            <table className="w-full mb-8 border-collapse">
                                 <thead>
                                     <tr className="text-left border-b border-surface-100">
-                                        <th className="pb-4 text-[10px] font-bold text-surface-400 uppercase tracking-widest">Item Description</th>
-                                        <th className="pb-4 text-center text-[10px] font-bold text-surface-400 uppercase tracking-widest">Qty</th>
-                                        <th className="pb-4 text-right text-[10px] font-bold text-surface-400 uppercase tracking-widest">Price</th>
-                                        <th className="pb-4 text-right text-[10px] font-bold text-surface-400 uppercase tracking-widest">Subtotal</th>
+                                        <th className="pb-4 text-[10px] font-bold text-surface-400 uppercase tracking-widest w-1/2">Item Description</th>
+                                        <th className="pb-4 text-center text-[10px] font-bold text-surface-400 uppercase tracking-widest w-1/6">Qty</th>
+                                        <th className="pb-4 text-right text-[10px] font-bold text-surface-400 uppercase tracking-widest w-1/6">Price</th>
+                                        <th className="pb-4 text-right text-[10px] font-bold text-surface-400 uppercase tracking-widest w-1/6">Subtotal</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {selectedBill.products?.map((p, idx) => (
                                         <tr key={idx} className="border-b border-surface-50 h-14">
-                                            <td className="font-bold text-surface-900 text-sm uppercase">{p.productName}</td>
+                                            <td className="font-bold text-surface-900 text-sm uppercase items-center flex h-14">{p.productName}</td>
                                             <td className="text-center font-bold text-surface-600 text-sm">{p.productQuantity}</td>
                                             <td className="text-right font-medium text-surface-500 text-sm">₹{p.productPrice}</td>
                                             <td className="text-right font-bold text-surface-900 text-sm">₹{p.productTotal}</td>

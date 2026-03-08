@@ -8,10 +8,12 @@ import {
 import { useSelector } from 'react-redux'
 import AxiosService from '../common/Axioservice'
 import GetAllProductHook from '../Hooks/GetAllProductHook'
+import useCategory from '../Hooks/useCategory'
 
 function QuickPriceUpdate() {
     const { getUSer } = GetAllProductHook()
     const { product } = useSelector(state => state.product)
+    const { categories: allStoreCategories } = useCategory()
     const [prices, setPrices] = useState({}) // Stores { id: { price, cost } }
     const [searchTerm, setSearchTerm] = useState('')
     const [selectedCategory, setSelectedCategory] = useState('')
@@ -21,10 +23,6 @@ function QuickPriceUpdate() {
         getUSer()
     }, [])
 
-    const categories = useMemo(() => {
-        if (!product) return []
-        return [...new Set(product.map(p => p.productType))].sort()
-    }, [product])
 
     useEffect(() => {
         if (product) {
@@ -122,8 +120,8 @@ function QuickPriceUpdate() {
                                 className="w-full h-12 bg-white/10 border border-white/20 rounded-xl pl-12 pr-4 text-sm font-bold focus:bg-white/20 focus:outline-none transition-all"
                             >
                                 <option value="" className="text-surface-900">All Categories</option>
-                                {categories.map(cat => (
-                                    <option key={cat} value={cat} className="text-surface-900">{cat}</option>
+                                {allStoreCategories?.map(cat => (
+                                    <option key={cat._id} value={cat.name} className="text-surface-900">{cat.name}</option>
                                 ))}
                             </select>
                         </div>
