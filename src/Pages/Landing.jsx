@@ -252,8 +252,8 @@ function Landing() {
                 }`}>
                 <div className="container mx-auto px-4 md:px-6 flex items-center justify-between">
                     <div className="flex items-center gap-2 md:gap-3">
-                        <div className="w-8 h-8 md:w-10 md:h-10 bg-primary rounded-lg md:rounded-xl flex items-center justify-center text-white shadow-lg shadow-primary/30 shrink-0">
-                            <span className="text-sm md:text-xl font-black tracking-tighter uppercase leading-none">V B</span>
+                        <div className="w-8 h-8 md:w-10 md:h-10 bg-white rounded-lg md:rounded-xl flex items-center justify-center shadow-lg shrink-0 overflow-hidden">
+                            <img src="/favicon.png" alt="Logo" className="w-full h-full object-cover" />
                         </div>
                         <span className={`text-lg md:text-xl font-display font-black tracking-tight ${scrolled ? 'text-surface-900' : 'text-white'}`}>
                             {t.brand} <span className="text-primary font-bold">Stores</span>
@@ -582,8 +582,8 @@ function Landing() {
                     <div className="flex flex-col lg:flex-row justify-between gap-10 md:gap-12 mb-12 md:mb-16 text-center md:text-left">
                         <div className="max-w-md mx-auto md:mx-0">
                             <div className="flex items-center justify-center md:justify-start gap-3 mb-6 md:mb-8">
-                                <div className="w-8 h-8 md:w-10 md:h-10 bg-primary rounded-lg flex items-center justify-center text-white">
-                                    <span className="text-base font-black">V B</span>
+                                <div className="w-8 h-8 md:w-10 md:h-10 bg-white rounded-lg flex items-center justify-center shadow-lg overflow-hidden shrink-0 mx-auto md:mx-0">
+                                    <img src="/favicon.png" alt="Logo" className="w-full h-full object-cover" />
                                 </div>
                                 <span className="text-2xl font-display font-black tracking-tight">
                                     {t.brand} <span className="text-primary font-bold">Stores</span>
