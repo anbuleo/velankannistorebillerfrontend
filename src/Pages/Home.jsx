@@ -14,6 +14,17 @@ function Home() {
   const { customer } = useSelector((state) => state.customer)
   const [allExpenses, setAllExpenses] = useState([])
   const [totalExpenses, setTotalExpenses] = useState(0)
+  const [searchInput, setSearchInput] = useState('')
+
+  const filteredProducts = useMemo(() => {
+    const term = searchInput.toLowerCase().trim();
+    if (!term) return [];
+    return product.filter(p =>
+      p.productName.toLowerCase().includes(term) ||
+      p.productCode.toLowerCase().includes(term) ||
+      p.tanglishName?.toLowerCase().includes(term)
+    ).slice(0, 10);
+  }, [product, searchInput]);
 
   const isAdmin = data?.role === 'admin'
 
@@ -86,28 +97,47 @@ function Home() {
             Real-time insights and financial reconciliation for your premium retail management system.
           </p>
         </div>
-        <div className="hidden lg:block">
-          {lowStockCount > 0 ? (
-            <Link to="/lowstock" className="glass-card p-4 border-none bg-error/5 flex items-center gap-4 hover:bg-error/10 transition-all">
-              <div className="w-12 h-12 rounded-2xl bg-white text-error flex items-center justify-center text-2xl shadow-sm border border-error/10 animate-pulse">
-                <MdWarning />
+        <div className="flex flex-col gap-6 w-full max-w-md">
+          <div className="relative group">
+            <MdSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-surface-400 text-xl group-focus-within:text-primary transition-colors z-10" />
+            <input
+              type="text"
+              placeholder="Instant Product Search..."
+              className="premium-input w-full h-14 pl-12 pr-4 bg-white shadow-xl shadow-surface-200/50 border-none text-sm font-bold focus:ring-4 focus:ring-primary/10 transition-all"
+              onChange={(e) => setSearchInput(e.target.value)}
+              value={searchInput}
+            />
+
+            {searchInput && (
+              <div className="absolute top-[110%] left-0 right-0 z-[100] glass-card shadow-2xl border-2 border-primary/10 overflow-hidden animate-in fade-in slide-in-from-top-2">
+                <div className="bg-surface-50 px-4 py-2 border-b text-[9px] font-black uppercase tracking-widest text-surface-400">
+                  Global Identification Engine ({filteredProducts.length} Results)
+                </div>
+                <div className="max-h-[300px] overflow-y-auto no-scrollbar">
+                  {filteredProducts.length > 0 ? filteredProducts.map(p => (
+                    <Link
+                      key={p._id}
+                      to={`/editproduct/${p._id}`}
+                      className="w-full px-5 py-3.5 flex items-center justify-between hover:bg-primary/5 border-b border-surface-50 transition-all group"
+                    >
+                      <div className="text-left">
+                        <p className="font-black text-surface-900 group-hover:text-primary transition-colors text-xs uppercase">{p.productName}</p>
+                        <p className="text-[10px] font-bold text-surface-400 uppercase tracking-tighter flex items-center gap-2 mt-0.5">
+                          {p.productCode} <span className="opacity-30">|</span> <span className="text-primary font-black">{p.unitValue}{p.qantityType}</span>
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-display font-black text-primary">₹{p.productPrice}</p>
+                        <p className={`text-[9px] font-black uppercase ${Number(p.stockQuantity) < 10 ? 'text-error' : 'text-success'}`}>STK: {p.stockQuantity}</p>
+                      </div>
+                    </Link>
+                  )) : (
+                    <div className="p-10 text-center opacity-30 italic text-xs font-bold uppercase tracking-widest">No Matches Found</div>
+                  )}
+                </div>
               </div>
-              <div>
-                <p className="text-xs font-bold text-error uppercase tracking-widest leading-none mb-1">Stock Warning</p>
-                <p className="font-bold text-surface-900 leading-none">{lowStockCount} Items Critical</p>
-              </div>
-            </Link>
-          ) : (
-            <div className="glass-card p-4 border-none bg-primary/5 flex items-center gap-4">
-              <div className="w-12 h-12 rounded-2xl bg-white text-primary flex items-center justify-center text-2xl shadow-sm">
-                <MdInfoOutline />
-              </div>
-              <div>
-                <p className="text-xs font-bold text-primary-600 uppercase tracking-widest leading-none mb-1">System Health</p>
-                <p className="font-bold text-surface-900 leading-none">All Systems Optimal</p>
-              </div>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       </div>
 

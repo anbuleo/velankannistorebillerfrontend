@@ -239,8 +239,10 @@ function InstaBiller() {
                           className="w-full px-6 py-4 flex items-center justify-between hover:bg-primary/5 border-b border-surface-100 transition-all group"
                         >
                           <div className="text-left">
-                            <p className="font-black text-surface-900 group-hover:text-primary transition-colors">{p.productName}</p>
-                            <p className="text-[10px] font-bold text-surface-400 uppercase">{p.tanglishName} • {p.productCode}</p>
+                            <p className="font-black text-xs text-surface-900 group-hover:text-primary transition-colors">{p.productName}</p>
+                            <p className="text-[10px] font-bold text-surface-400 uppercase tracking-tight flex items-center gap-2 mt-0.5">
+                              {p.tanglishName} • {p.productCode} <span className="opacity-30">|</span> <span className="text-primary font-black">{p.unitValue}{p.qantityType}</span>
+                            </p>
                           </div>
                           <div className="flex items-center gap-6">
                             <div className="text-right">
@@ -333,7 +335,7 @@ function InstaBiller() {
                       <td>
                         <p className="font-black text-surface-900 uppercase text-sm leading-tight">{item.productName}</p>
                         <p className="text-[10px] font-bold text-surface-400 tracking-tighter flex items-center gap-2 mt-0.5">
-                          {item.productCode} <span className="opacity-30">|</span> Unit: {item.productUnit}{item.qantityType}
+                          {item.productCode} <span className="opacity-30">|</span> Unit: <span className="font-black text-surface-900 text-xs">{item.productUnit}{item.qantityType}</span>
                         </p>
                       </td>
                       <td className="text-center">

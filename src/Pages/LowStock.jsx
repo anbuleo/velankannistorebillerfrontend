@@ -61,7 +61,7 @@ function LowStock() {
                                 <div>
                                     <p className="text-[10px] font-bold text-surface-400 uppercase tracking-widest mb-1">Current Stock</p>
                                     <p className={`text-3xl font-display font-black ${Number(item.stockQuantity) === 0 ? 'text-error animate-pulse' : 'text-surface-900'}`}>
-                                        {item.stockQuantity} <span className="text-sm font-bold text-surface-400 uppercase tracking-tight">{item.qantityType || 'pcs'}</span>
+                                        {item.stockQuantity} <span className="text-sm font-black text-primary uppercase tracking-tight">{item.qantityType || 'pcs'}</span>
                                     </p>
                                 </div>
                                 <Link

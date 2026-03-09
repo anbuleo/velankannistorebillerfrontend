@@ -83,7 +83,11 @@ function Table({ data }) {
               <td className="text-surface-400 font-bold">{i + 1}</td>
               <td className="font-bold text-surface-900 uppercase tracking-tight">
                 {item.productName}
-                <span className="block text-[10px] text-surface-400 font-medium">{item.tanglishName}</span>
+                <div className="flex items-center gap-2 mt-0.5">
+                  <span className="text-[10px] text-surface-400 font-medium">{item.tanglishName}</span>
+                  <span className="text-[10px] text-primary/40 font-bold uppercase tracking-widest leading-none">|</span>
+                  <span className="text-[10px] text-primary font-black uppercase tracking-widest leading-none">{item.unitValue}{item.qantityType}</span>
+                </div>
               </td>
               <td>
                 <span className="badge badge-outline border-surface-200 text-surface-500 font-medium text-[10px] uppercase tracking-wider px-2">

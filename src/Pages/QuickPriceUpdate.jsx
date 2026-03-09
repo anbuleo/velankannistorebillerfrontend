@@ -176,7 +176,7 @@ function QuickPriceUpdate() {
                                         <td className="py-4 px-6">
                                             <p className="font-bold text-surface-900 text-sm">{p.productName}</p>
                                             <p className="text-[10px] text-surface-400 font-bold uppercase tracking-widest flex items-center gap-1">
-                                                {p.tanglishName} <span className="opacity-30">|</span> {p.productType}
+                                                {p.tanglishName} <span className="opacity-30">|</span> {p.productType} <span className="opacity-30">|</span> <span className="text-primary font-black">{p.unitValue}{p.qantityType}</span>
                                             </p>
                                         </td>
 

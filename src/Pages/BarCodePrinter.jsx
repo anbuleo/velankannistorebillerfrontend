@@ -115,7 +115,9 @@ function BarCodePrinter() {
                       >
                         <div>
                           <p className="font-black text-xs text-surface-900 group-hover:text-primary">{p.productName}</p>
-                          <p className="text-[9px] font-bold text-surface-400 uppercase tracking-tighter">{p.productCode}</p>
+                          <p className="text-[9px] font-bold text-surface-400 uppercase tracking-tighter flex items-center gap-2 mt-0.5">
+                            {p.productCode} <span className="opacity-30">|</span> <span className="text-primary/70">{p.unitValue}{p.qantityType}</span>
+                          </p>
                         </div>
                         <p className="font-display font-black text-primary">₹{p.productPrice}</p>
                       </button>
