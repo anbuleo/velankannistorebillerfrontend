@@ -83,7 +83,6 @@ function PrintBarCode({ props }) {
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: normal;
-            text-transform: uppercase;
             color: black;
             height: 6mm; /* Fixed height for 2 lines */
           }

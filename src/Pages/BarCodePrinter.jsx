@@ -64,8 +64,8 @@ function BarCodePrinter() {
     const fn = product?.find(p => p.productCode === val)
     if (!fn) return
 
-    // Prioritize Tamil name if available, otherwise use English
-    setName(fn.tanglishName || fn.productName)
+    // Use Tamil name exclusively for printing as requested
+    setName(fn.tanglishName || "NAME MISSING")
     setMrp(fn.MRP)
     setData(val)
     setQty(`${fn.unitValue || '1'}${fn.qantityType || 'PCS'}`)
