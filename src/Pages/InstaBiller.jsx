@@ -239,13 +239,12 @@ function InstaBiller() {
                           className="w-full px-6 py-4 flex items-center justify-between hover:bg-primary/5 border-b border-surface-100 transition-all group"
                         >
                           <div className="text-left">
-                            <p className="font-black text-xs text-primary group-hover:text-primary-600 transition-colors uppercase leading-none">{p.tanglishName}</p>
-                            <p className="text-[10px] font-bold text-surface-900 uppercase tracking-tight mt-1">
-                              {p.productName} <span className="opacity-30 mx-1">•</span> {p.productCode}
-                            </p>
-                            <p className="text-[9px] font-black text-surface-400 uppercase tracking-widest mt-1">
-                              Unit: <span className="text-secondary">{p.unitValue}{p.qantityType}</span>
-                            </p>
+                            <p className="font-black text-primary text-sm uppercase leading-tight">{p.productName}</p>
+                            <div className="flex items-center gap-2 mt-1">
+                              <span className="text-[10px] text-surface-900 font-bold uppercase">{p.tanglishName}</span>
+                              <span className="text-[10px] text-surface-300 font-bold uppercase tracking-widest leading-none">|</span>
+                              <span className="text-[10px] text-secondary font-black uppercase tracking-widest leading-none">{p.unitValue}{p.qantityType}</span>
+                            </div>
                           </div>
                           <div className="flex items-center gap-6">
                             <div className="text-right">
@@ -336,9 +335,9 @@ function InstaBiller() {
                     <tr key={item.productId} className="hover:bg-surface-50/50 transition-colors h-24">
                       <td className="text-center opacity-30 font-black text-xs">{i + 1}</td>
                       <td>
-                        <p className="font-black text-primary uppercase text-sm leading-tight">{item.tanglishName}</p>
+                        <p className="font-black text-primary uppercase text-sm leading-tight">{item.productName}</p>
                         <p className="text-[10px] font-bold text-surface-900 tracking-tighter flex items-center gap-2 mt-0.5">
-                          {item.productName} <span className="opacity-30">|</span> {item.productCode}
+                          {item.tanglishName} <span className="opacity-30">|</span> {item.productCode}
                         </p>
                         <p className="text-[9px] font-black text-surface-400 uppercase tracking-widest mt-1">
                           Unit: <span className="text-secondary">{item.productUnit}{item.qantityType}</span>

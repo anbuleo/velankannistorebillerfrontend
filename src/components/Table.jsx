@@ -82,9 +82,9 @@ function Table({ data }) {
             <tr key={item._id} className="hover:bg-surface-50/50 transition-colors">
               <td className="text-surface-400 font-bold">{i + 1}</td>
               <td className="tracking-tight py-4">
-                <p className="font-black text-primary uppercase text-sm leading-tight mb-1">{item.tanglishName}</p>
+                <p className="font-black text-primary uppercase text-sm leading-tight mb-1">{item.productName}</p>
                 <div className="flex items-center gap-2">
-                  <span className="text-[10px] text-surface-900 font-bold uppercase">{item.productName}</span>
+                  <span className="text-[10px] text-surface-900 font-bold uppercase">{item.tanglishName}</span>
                   <span className="text-[10px] text-surface-300 font-bold uppercase tracking-widest leading-none">|</span>
                   <span className="text-[10px] text-secondary font-black uppercase tracking-widest leading-none">{item.unitValue}{item.qantityType}</span>
                 </div>

@@ -64,8 +64,8 @@ function BarCodePrinter() {
     const fn = product?.find(p => p.productCode === val)
     if (!fn) return
 
-    // Use Tamil name exclusively for printing as requested
-    setName(fn.tanglishName || "NAME MISSING")
+    // Strictly use Tamil name (Primary Tamil Identity) for both label and preview
+    setName(fn.productName || "NAME MISSING")
     setMrp(fn.MRP)
     setData(val)
     setQty(`${fn.unitValue || '1'}${fn.qantityType || 'PCS'}`)
@@ -117,10 +117,10 @@ function BarCodePrinter() {
                       >
                         <div>
                           <p className="font-black text-xs text-primary group-hover:text-primary-600 transition-colors uppercase leading-none">
-                            {p.tanglishName}
+                            {p.productName}
                           </p>
                           <p className="font-bold text-[10px] text-surface-900 mt-1 uppercase tracking-tight">
-                            {p.productName}
+                            {p.tanglishName}
                           </p>
                           <p className="text-[9px] font-bold text-surface-400 uppercase tracking-tighter flex items-center gap-2 mt-1">
                             {p.productCode} <span className="opacity-30">|</span> <span className="text-secondary font-black">{p.unitValue}{p.qantityType}</span>
@@ -203,7 +203,7 @@ function BarCodePrinter() {
                         style={{ width: '192px', height: '96px', padding: '4px' }}>
                         <img src={barImg} alt="Barcode Preview" className="h-[34px] w-full object-contain mb-1" />
                         <div style={{ height: '24px', display: 'flex', alignItems: 'center', width: '100%' }}>
-                          <p className="text-[10px] font-extrabold text-black uppercase leading-[1.1] w-full text-center overflow-hidden"
+                          <p className="text-[10px] font-extrabold text-black leading-[1.1] w-full text-center overflow-hidden"
                             style={{ display: '-webkit-box', WebkitLineClamp: '2', WebkitBoxOrient: 'vertical' }}>
                             {name}
                           </p>
