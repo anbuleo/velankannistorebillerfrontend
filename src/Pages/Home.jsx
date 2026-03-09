@@ -121,9 +121,12 @@ function Home() {
                       className="w-full px-5 py-3.5 flex items-center justify-between hover:bg-primary/5 border-b border-surface-50 transition-all group"
                     >
                       <div className="text-left">
-                        <p className="font-black text-surface-900 group-hover:text-primary transition-colors text-xs uppercase">{p.productName}</p>
-                        <p className="text-[10px] font-bold text-surface-400 uppercase tracking-tighter flex items-center gap-2 mt-0.5">
-                          {p.productCode} <span className="opacity-30">|</span> <span className="text-primary font-black">{p.unitValue}{p.qantityType}</span>
+                        <p className="font-black text-primary group-hover:text-primary-600 transition-colors text-xs uppercase leading-none">{p.tanglishName}</p>
+                        <p className="text-[10px] font-bold text-surface-900 uppercase tracking-tighter mt-1">
+                          {p.productName} <span className="opacity-30 mx-1">|</span> {p.productCode}
+                        </p>
+                        <p className="text-[9px] font-black text-surface-400 uppercase tracking-[0.1em] flex items-center gap-2 mt-1">
+                          UNIT: <span className="text-secondary">{p.unitValue}{p.qantityType}</span>
                         </p>
                       </div>
                       <div className="text-right">

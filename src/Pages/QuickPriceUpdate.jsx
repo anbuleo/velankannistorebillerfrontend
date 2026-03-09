@@ -174,10 +174,12 @@ function QuickPriceUpdate() {
                                 return (
                                     <tr key={p._id} className={`hover:bg-surface-50/50 transition-colors ${(isPriceChanged || isCostChanged) ? 'bg-primary/5' : ''}`}>
                                         <td className="py-4 px-6">
-                                            <p className="font-bold text-surface-900 text-sm">{p.productName}</p>
-                                            <p className="text-[10px] text-surface-400 font-bold uppercase tracking-widest flex items-center gap-1">
-                                                {p.tanglishName} <span className="opacity-30">|</span> {p.productType} <span className="opacity-30">|</span> <span className="text-primary font-black">{p.unitValue}{p.qantityType}</span>
-                                            </p>
+                                            <p className="font-black text-primary text-sm uppercase leading-tight">{p.tanglishName}</p>
+                                            <div className="flex items-center gap-2 mt-1">
+                                                <span className="text-[10px] text-surface-900 font-bold uppercase">{p.productName}</span>
+                                                <span className="text-[10px] text-surface-300 font-bold uppercase tracking-widest leading-none">|</span>
+                                                <span className="text-[10px] text-secondary font-black uppercase tracking-widest leading-none">{p.unitValue}{p.qantityType}</span>
+                                            </div>
                                         </td>
 
                                         {/* Cost Input */}

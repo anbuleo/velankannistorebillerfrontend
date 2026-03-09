@@ -27,7 +27,8 @@ function BarCodePrinter() {
     if (!term) return [];
     return product.filter(p =>
       p.productName.toLowerCase().includes(term) ||
-      p.productCode.toLowerCase().includes(term)
+      p.productCode.toLowerCase().includes(term) ||
+      p.tanglishName?.toLowerCase().includes(term)
     ).slice(0, 10);
   }, [product, searchInput]);
 
@@ -63,7 +64,8 @@ function BarCodePrinter() {
     const fn = product?.find(p => p.productCode === val)
     if (!fn) return
 
-    setName(fn.productName)
+    // Prioritize Tamil name if available, otherwise use English
+    setName(fn.tanglishName || fn.productName)
     setMrp(fn.MRP)
     setData(val)
     setQty(`${fn.unitValue || '1'}${fn.qantityType || 'PCS'}`)
@@ -114,9 +116,14 @@ function BarCodePrinter() {
                         className="w-full px-4 py-3 text-left hover:bg-primary/5 border-b border-surface-100 flex justify-between items-center transition-all group"
                       >
                         <div>
-                          <p className="font-black text-xs text-surface-900 group-hover:text-primary">{p.productName}</p>
-                          <p className="text-[9px] font-bold text-surface-400 uppercase tracking-tighter flex items-center gap-2 mt-0.5">
-                            {p.productCode} <span className="opacity-30">|</span> <span className="text-primary/70">{p.unitValue}{p.qantityType}</span>
+                          <p className="font-black text-xs text-primary group-hover:text-primary-600 transition-colors uppercase leading-none">
+                            {p.tanglishName}
+                          </p>
+                          <p className="font-bold text-[10px] text-surface-900 mt-1 uppercase tracking-tight">
+                            {p.productName}
+                          </p>
+                          <p className="text-[9px] font-bold text-surface-400 uppercase tracking-tighter flex items-center gap-2 mt-1">
+                            {p.productCode} <span className="opacity-30">|</span> <span className="text-secondary font-black">{p.unitValue}{p.qantityType}</span>
                           </p>
                         </div>
                         <p className="font-display font-black text-primary">₹{p.productPrice}</p>
