@@ -65,8 +65,9 @@ function Product() {
 
       {/* Filters & Search */}
       <div className="glass-card mb-8 p-6">
-        <div className="flex flex-col lg:flex-row lg:items-center gap-6">
-          <div className="flex-1 relative">
+        <div className="flex flex-col lg:flex-row lg:items-center gap-8">
+          {/* Search: Prioritized with larger flex-grow */}
+          <div className="flex-[1.5] relative min-w-0 lg:min-w-[400px]">
             <MdSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-surface-400 text-lg" />
             <input
               type="text"
@@ -77,7 +78,8 @@ function Product() {
             />
           </div>
 
-          <div className="flex items-center gap-3 overflow-x-auto pb-2 lg:pb-0 scrollbar-hide">
+          {/* Categories: Flexible but capped to prevent squeezed search bar */}
+          <div className="flex-1 flex items-center gap-3 overflow-x-auto pb-2 lg:pb-0 scrollbar-hide min-w-0">
             <div className="flex items-center gap-2 text-surface-400 font-bold uppercase text-[10px] tracking-widest whitespace-nowrap px-2">
               <MdFilterList className="text-sm" /> Filter By
             </div>
