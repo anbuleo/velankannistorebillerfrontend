@@ -33,6 +33,9 @@ function InstaBiller() {
   const [showCustomerResults, setShowCustomerResults] = useState(false)
   const [isPickingSlip, setIsPickingSlip] = useState(false)
   const [currentTime, setCurrentTime] = useState(new Date().toLocaleTimeString())
+  const [selectedProductIndex, setSelectedProductIndex] = useState(0)
+  const [selectedCustomerIndex, setSelectedCustomerIndex] = useState(-1)
+  const [showShortcuts, setShowShortcuts] = useState(false)
 
   // Refs for focus management
   const searchInputRef = useRef(null)
@@ -132,6 +135,32 @@ function InstaBiller() {
   // Keyboard Event Management
   useEffect(() => {
     const handleKeys = (e) => {
+      // Functional Keys (Standalone)
+      if (e.key === 'F2') { e.preventDefault(); dispatch(addBillTab()); }
+      if (e.key === 'F6') { 
+        e.preventDefault(); 
+        setPaymentType(prev => prev === 'cash' ? 'online' : 'cash');
+        toast.info(`Payment: ${paymentType === 'cash' ? 'Online' : 'Cash'}`, { autoClose: 500 });
+      }
+      if (e.key === 'F7') {
+        e.preventDefault();
+        if (customeronecart?.name !== 'Retail Customer') {
+          setPaymentStatus(prev => prev === 'paid' ? 'pending' : 'paid');
+          toast.info(`Status: ${paymentStatus === 'paid' ? 'Credit' : 'Paid'}`, { autoClose: 500 });
+        }
+      }
+      if (e.key === 'F8') { e.preventDefault(); handleSave(false); }
+      if (e.key === 'F9') { e.preventDefault(); document.querySelector('input[placeholder="Customer Search..."]')?.focus(); }
+      if (e.key === 'F10') { e.preventDefault(); handleSave(true); }
+      if (e.key === 'F12') { e.preventDefault(); dispatch(resetCart()); }
+      if (e.key === 'Escape') {
+        setSearchInput('');
+        setCustomerSearch('');
+        setShowCustomerResults(false);
+        searchInputRef.current?.focus();
+      }
+
+      // Alt Key Combinations (Legacy & Backup)
       if (e.altKey) {
         const key = e.key.toLowerCase();
         if (key === 's') { e.preventDefault(); handleSave(false); }
@@ -139,11 +168,21 @@ function InstaBiller() {
         if (key === 'f') { e.preventDefault(); searchInputRef.current?.focus(); }
         if (key === 'n') { e.preventDefault(); dispatch(addBillTab()); }
         if (key === 'q') { e.preventDefault(); dispatch(resetCart()); }
+        if (key === 'h') { e.preventDefault(); setShowShortcuts(prev => !prev); }
+      }
+
+      // Ctrl + Number for Tabs
+      if (e.ctrlKey && e.key >= '1' && e.key <= '9') {
+        const index = parseInt(e.key) - 1;
+        if (bills[index]) {
+          e.preventDefault();
+          dispatch(setActiveBill(bills[index].id));
+        }
       }
     };
     window.addEventListener('keydown', handleKeys);
     return () => window.removeEventListener('keydown', handleKeys);
-  }, [cart, totalPriceInCart, customeronecart, paymentStatus, paymentType]);
+  }, [cart, totalPriceInCart, customeronecart, paymentStatus, paymentType, bills, dispatch]);
 
   // Initial Sync
   useEffect(() => {
@@ -218,9 +257,22 @@ function InstaBiller() {
                   placeholder="Scanner Mode Active: Scan or Search..."
                   className="w-full h-16 pl-14 pr-4 bg-surface-50 border-2 border-surface-100 rounded-2xl text-lg font-bold focus:bg-white focus:border-primary transition-all outline-none"
                   value={searchInput}
-                  onChange={(e) => setSearchInput(e.target.value)}
+                  onChange={(e) => {
+                    setSearchInput(e.target.value);
+                    setSelectedProductIndex(0);
+                  }}
                   onKeyDown={(e) => {
-                    if (e.key === 'Enter' && filteredProducts.length > 0) addToCart(filteredProducts[0]);
+                    if (e.key === 'ArrowDown') {
+                      e.preventDefault();
+                      setSelectedProductIndex(prev => Math.min(prev + 1, filteredProducts.length - 1));
+                    } else if (e.key === 'ArrowUp') {
+                      e.preventDefault();
+                      setSelectedProductIndex(prev => Math.max(prev - 1, 0));
+                    } else if (e.key === 'Enter' && filteredProducts.length > 0) {
+                      e.preventDefault();
+                      addToCart(filteredProducts[selectedProductIndex]);
+                      setSelectedProductIndex(0);
+                    }
                   }}
                 />
 
@@ -232,11 +284,11 @@ function InstaBiller() {
                       <span className="flex items-center gap-2"><MdKeyboard /> Enter to add first</span>
                     </div>
                     <div className="max-h-[400px] overflow-y-auto">
-                      {filteredProducts.map(p => (
+                      {filteredProducts.map((p, idx) => (
                         <button
                           key={p._id}
                           onClick={() => addToCart(p)}
-                          className="w-full px-6 py-4 flex items-center justify-between hover:bg-primary/5 border-b border-surface-100 transition-all group"
+                          className={`w-full px-6 py-4 flex items-center justify-between border-b border-surface-100 transition-all group ${selectedProductIndex === idx ? 'bg-primary/10 border-l-4 border-l-primary' : 'hover:bg-primary/5'}`}
                         >
                           <div className="text-left">
                             <p className="font-black text-primary text-sm uppercase leading-tight">{p.productName}</p>
@@ -273,22 +325,45 @@ function InstaBiller() {
                   onChange={(e) => {
                     setCustomerSearch(e.target.value);
                     setShowCustomerResults(true);
+                    setSelectedCustomerIndex(-1);
                   }}
                   onFocus={() => setShowCustomerResults(true)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'ArrowDown') {
+                      e.preventDefault();
+                      setSelectedCustomerIndex(prev => Math.min(prev + 1, filteredCustomers.length - 1));
+                    } else if (e.key === 'ArrowUp') {
+                      e.preventDefault();
+                      setSelectedCustomerIndex(prev => Math.max(prev - 1, -1));
+                    } else if (e.key === 'Enter') {
+                      e.preventDefault();
+                      if (selectedCustomerIndex === -1) {
+                        dispatch(addCustomerBillOne({ name: 'Retail Customer' }));
+                        setShowCustomerResults(false);
+                        setCustomerSearch('');
+                      } else if (filteredCustomers[selectedCustomerIndex]) {
+                        const c = filteredCustomers[selectedCustomerIndex];
+                        dispatch(addCustomerBillOne(c));
+                        setShowCustomerResults(false);
+                        setCustomerSearch(c.name);
+                      }
+                      searchInputRef.current?.focus();
+                    }
+                  }}
                 />
                 {showCustomerResults && (
                   <div className="absolute top-[110%] left-0 right-0 glass-card shadow-2xl border overflow-hidden z-[100]">
                     <button
-                      onClick={() => { dispatch(addCustomerBillOne({ name: 'Retail Customer' })); setShowCustomerResults(false); setCustomerSearch(''); }}
-                      className="w-full px-6 py-3 text-left font-black text-[10px] uppercase text-surface-400 hover:bg-surface-50 border-b"
+                      onClick={() => { dispatch(addCustomerBillOne({ name: 'Retail Customer' })); setShowCustomerResults(false); setCustomerSearch(''); searchInputRef.current?.focus(); }}
+                      className={`w-full px-6 py-3 text-left font-black text-[10px] uppercase border-b transition-all ${selectedCustomerIndex === -1 ? 'bg-primary/10 text-primary' : 'text-surface-400 hover:bg-surface-50'}`}
                     >
                       Guest (Default)
                     </button>
-                    {filteredCustomers.map(c => (
+                    {filteredCustomers.map((c, idx) => (
                       <button
                         key={c._id}
-                        onClick={() => { dispatch(addCustomerBillOne(c)); setShowCustomerResults(false); setCustomerSearch(c.name); }}
-                        className="w-full px-6 py-4 flex flex-col hover:bg-primary/5 transition-all text-left border-b last:border-0"
+                        onClick={() => { dispatch(addCustomerBillOne(c)); setShowCustomerResults(false); setCustomerSearch(c.name); searchInputRef.current?.focus(); }}
+                        className={`w-full px-6 py-4 flex flex-col transition-all text-left border-b last:border-0 ${selectedCustomerIndex === idx ? 'bg-primary/10 border-l-4 border-l-primary' : 'hover:bg-primary/5'}`}
                       >
                         <span className="font-black text-surface-900 text-sm">{c.name}</span>
                         <span className="text-[10px] font-bold text-surface-400">{c.mobile} • {c.address || 'No Address'}</span>
@@ -510,6 +585,36 @@ function InstaBiller() {
                   <p className="text-[10px] font-black uppercase italic">Standard Ops Mode</p>
                 </div>
               )}
+            </div>
+          </div>
+
+          {/* Shortcut Legend - Professional POS UX */}
+          <div className="glass-card p-6 bg-surface-50 border-2 border-primary/5">
+            <h4 className="text-[10px] font-black uppercase tracking-widest text-surface-400 mb-4 flex items-center gap-2">
+              <MdKeyboard className="text-primary text-lg" /> Command Shortcuts
+            </h4>
+            <div className="grid grid-cols-2 gap-3">
+              {[
+                { key: 'F2', label: 'New Bill' },
+                { key: 'F6', label: 'Payment Mode' },
+                { key: 'F8', label: 'Quick Save' },
+                { key: 'F9', label: 'Search Client' },
+                { key: 'F10', label: 'Print Bill' },
+                { key: 'F12', label: 'Clear All' },
+                { key: 'ESC', label: 'Reset Focus' },
+                { key: 'Tab', label: 'Switch Input' },
+              ].map(s => (
+                <div key={s.key} className="flex items-center justify-between px-3 py-2 rounded-xl bg-white border border-surface-100 shadow-sm transition-all hover:border-primary/20">
+                  <span className="text-[10px] font-black text-surface-400 uppercase">{s.label}</span>
+                  <kbd className="px-2 py-0.5 rounded bg-surface-900 text-white text-[10px] font-display font-black min-w-[32px] text-center">{s.key}</kbd>
+                </div>
+              ))}
+            </div>
+            <div className="mt-4 pt-4 border-t border-surface-200 flex items-center justify-between overflow-hidden">
+               <span className="text-[9px] font-black text-surface-400 uppercase">Tab Switching</span>
+               <div className="flex gap-1">
+                 {[1,2,3].map(n => <span key={n} className="px-1.5 py-0.5 rounded bg-surface-200 text-[8px] font-black">^ + {n}</span>)}
+               </div>
             </div>
           </div>
         </div>
