@@ -143,83 +143,85 @@ function AdminAudit() {
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 {/* Sales Audit Log */}
-                <div className="glass-card flex flex-col h-[500px]">
-                    <div className="p-6 border-b border-surface-100 flex items-center justify-between">
-                        <h3 className="font-display font-bold text-surface-900 flex items-center gap-2">
-                            <MdReceipt className="text-primary" /> Sales Audit Log
-                        </h3>
-                        <span className="badge badge-outline border-surface-200 font-bold text-[10px] uppercase">{dailyBills.length} TX</span>
-                    </div>
-                    <div className="flex-1 overflow-y-auto">
-                        <table className="premium-table">
-                            <thead className="sticky top-0 bg-surface-50 z-10">
-                                <tr>
-                                    <th>Customer</th>
-                                    <th className="text-center">Mode</th>
-                                    <th className="text-right">Amount</th>
-                                    <th className="text-right">Margin</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {dailyBills.length > 0 ? dailyBills.map((bill, i) => {
-                                    // Calculate bill-wise profit
-                                    let billProfit = 0;
-                                    if (bill.products && Array.isArray(bill.products)) {
-                                        bill.products.forEach(item => {
-                                            const cost = Number(item.productCost) || 
-                                                         Number(product.find(p => p._id === item.productId || p.productName === item.productName)?.productCost) || 0;
-                                            const qty = Number(item.productQuantity || 1);
-                                            const sellingPrice = Number(item.productPrice || 0);
-                                            billProfit += (sellingPrice - cost) * qty;
-                                        });
-                                    }
+                <PinGate label="Sales Ledger">
+                    <div className="glass-card flex flex-col h-[500px]">
+                        <div className="p-6 border-b border-surface-100 flex items-center justify-between">
+                            <h3 className="font-display font-bold text-surface-900 flex items-center gap-2">
+                                <MdReceipt className="text-primary" /> Sales Audit Log
+                            </h3>
+                            <span className="badge badge-outline border-surface-200 font-bold text-[10px] uppercase">{dailyBills.length} TX</span>
+                        </div>
+                        <div className="flex-1 overflow-y-auto">
+                            <table className="premium-table">
+                                <thead className="sticky top-0 bg-surface-50 z-10">
+                                    <tr>
+                                        <th>Customer</th>
+                                        <th className="text-center">Mode</th>
+                                        <th className="text-right">Amount</th>
+                                        <th className="text-right">Margin</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {dailyBills.length > 0 ? dailyBills.map((bill, i) => {
+                                        // Calculate bill-wise profit
+                                        let billProfit = 0;
+                                        if (bill.products && Array.isArray(bill.products)) {
+                                            bill.products.forEach(item => {
+                                                const cost = Number(item.productCost) || 
+                                                             Number(product.find(p => p._id === item.productId || p.productName === item.productName)?.productCost) || 0;
+                                                const qty = Number(item.productQuantity || 1);
+                                                const sellingPrice = Number(item.productPrice || 0);
+                                                billProfit += (sellingPrice - cost) * qty;
+                                            });
+                                        }
 
-                                    return (
-                                        <tr key={bill._id || i} className="hover:bg-surface-50">
-                                            <td>
-                                                <p className="font-bold text-surface-900 text-xs uppercase">{bill.customerName || 'Walk-in'}</p>
-                                                <p className="text-[9px] text-surface-400 font-bold">{new Date(bill.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
-                                            </td>
-                                            <td className="text-center">
-                                                <span className={`badge text-[9px] font-bold uppercase tracking-wider text-white border-none ${(bill.paymentType || '').toLowerCase() === 'cash' ? 'badge-success' :
-                                                    (bill.paymentType || '').toLowerCase() === 'online' ? 'badge-info' :
-                                                        'badge-warning'
-                                                    }`}>
-                                                    {bill.paymentType || 'cash'}
-                                                </span>
-                                            </td>
-                                            <td className="text-right font-display font-bold text-surface-900 text-sm">
-                                                ₹{Number(bill.totalAmount || 0).toLocaleString()}
-                                                {Number(bill.dueAmount) > 0 && (
-                                                    <p className="text-[9px] text-error font-bold">₹{bill.dueAmount} due</p>
-                                                )}
-                                            </td>
-                                            <td className="text-right font-display font-bold text-success text-sm italic">
-                                                ₹{billProfit.toLocaleString()}
-                                            </td>
-                                        </tr>
-                                    )
-                                }) : (
-                                    <tr><td colSpan={4} className="text-center py-20 text-surface-400 italic">No sales recorded for this date</td></tr>
-                                )}
-                            </tbody>
-                        </table>
+                                        return (
+                                            <tr key={bill._id || i} className="hover:bg-surface-50">
+                                                <td>
+                                                    <p className="font-bold text-surface-900 text-xs uppercase">{bill.customerName || 'Walk-in'}</p>
+                                                    <p className="text-[9px] text-surface-400 font-bold">{new Date(bill.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+                                                </td>
+                                                <td className="text-center">
+                                                    <span className={`badge text-[9px] font-bold uppercase tracking-wider text-white border-none ${(bill.paymentType || '').toLowerCase() === 'cash' ? 'badge-success' :
+                                                        (bill.paymentType || '').toLowerCase() === 'online' ? 'badge-info' :
+                                                            'badge-warning'
+                                                        }`}>
+                                                        {bill.paymentType || 'cash'}
+                                                    </span>
+                                                </td>
+                                                <td className="text-right font-display font-bold text-surface-900 text-sm">
+                                                    ₹{Number(bill.totalAmount || 0).toLocaleString()}
+                                                    {Number(bill.dueAmount) > 0 && (
+                                                        <p className="text-[9px] text-error font-bold">₹{bill.dueAmount} due</p>
+                                                    )}
+                                                </td>
+                                                <td className="text-right font-display font-bold text-success text-sm italic">
+                                                    ₹{billProfit.toLocaleString()}
+                                                </td>
+                                            </tr>
+                                        )
+                                    }) : (
+                                        <tr><td colSpan={4} className="text-center py-20 text-surface-400 italic">No sales recorded for this date</td></tr>
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
+                        <div className="p-4 bg-surface-50 border-t border-surface-100 grid grid-cols-3 gap-2">
+                            <div className="text-center">
+                                <p className="text-[8px] font-bold text-surface-400 uppercase">Cash</p>
+                                <p className="text-xs font-black text-success">₹{stats.cashSales.toLocaleString()}</p>
+                            </div>
+                            <div className="text-center border-x border-surface-200">
+                                <p className="text-[8px] font-bold text-surface-400 uppercase">Online</p>
+                                <p className="text-xs font-black text-info">₹{stats.onlineSales.toLocaleString()}</p>
+                            </div>
+                            <div className="text-center">
+                                <p className="text-[8px] font-bold text-surface-400 uppercase">Pending</p>
+                                <p className="text-xs font-black text-error">₹{stats.pendingSales.toLocaleString()}</p>
+                            </div>
+                        </div>
                     </div>
-                    <div className="p-4 bg-surface-50 border-t border-surface-100 grid grid-cols-3 gap-2">
-                        <div className="text-center">
-                            <p className="text-[8px] font-bold text-surface-400 uppercase">Cash</p>
-                            <p className="text-xs font-black text-success">₹{stats.cashSales.toLocaleString()}</p>
-                        </div>
-                        <div className="text-center border-x border-surface-200">
-                            <p className="text-[8px] font-bold text-surface-400 uppercase">Online</p>
-                            <p className="text-xs font-black text-info">₹{stats.onlineSales.toLocaleString()}</p>
-                        </div>
-                        <div className="text-center">
-                            <p className="text-[8px] font-bold text-surface-400 uppercase">Pending</p>
-                            <p className="text-xs font-black text-error">₹{stats.pendingSales.toLocaleString()}</p>
-                        </div>
-                    </div>
-                </div>
+                </PinGate>
 
                 {/* Expense Audit Log */}
                 <div className="glass-card flex flex-col h-[500px]">
