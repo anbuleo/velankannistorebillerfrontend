@@ -50,7 +50,8 @@ function PrintItems({ props }) {
               <tr key={i} className="text-[11px] font-black">
                 <td className="py-1 align-top">
                   <div className="uppercase">
-                    {e.productName} <span className="text-[9px] lowercase opacity-80">({e.productUnit} {e.qantityType})</span>
+                    <span className="inline-block max-w-[170px] truncate align-middle font-black" title={e.productName}>{e.productName}</span> 
+                    <span className="text-[9px] lowercase font-black align-middle ml-1">({e.productUnit} {e.qantityType})</span>
                   </div>
                 </td>
                 <td className="text-center py-1 align-top">

@@ -420,11 +420,11 @@ function InstaBiller() {
                       <td className="text-center opacity-30 font-black text-xs">{i + 1}</td>
                       <td>
                         <p className="font-black text-primary uppercase text-sm leading-tight">{item.productName}</p>
-                        <p className="text-[10px] font-bold text-surface-900 tracking-tighter flex items-center gap-2 mt-0.5">
+                        <p className="text-[10px] font-black text-surface-900 tracking-tighter flex items-center gap-2 mt-0.5">
                           {item.tanglishName} <span className="opacity-30">|</span> {item.productCode}
                         </p>
-                        <p className="text-[9px] font-black text-surface-400 uppercase tracking-widest mt-1">
-                          Unit: <span className="text-secondary">{item.productUnit}{item.qantityType}</span>
+                        <p className="text-[10px] font-black text-surface-400 uppercase tracking-widest mt-1">
+                          Unit: <span className="text-secondary font-black">{item.productUnit}{item.qantityType}</span>
                         </p>
                       </td>
                       <td className="text-center">
