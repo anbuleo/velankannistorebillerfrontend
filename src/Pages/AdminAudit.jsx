@@ -49,12 +49,17 @@ function AdminAudit() {
         dailyBills.forEach(bill => {
             totalRevenue += Number(bill.totalAmount || 0);
 
-            // Calculate cost for each item in the bill
+            // Calculate cost and price for each item in the bill
             if (bill.products && Array.isArray(bill.products)) {
                 bill.products.forEach(item => {
-                    // Try to get cost from bill item (new bills) or fallback to product list (old bills)
-                    const cost = Number(item.productCost) || 
-                                 Number(product.find(p => p._id === item.productId || p.productName === item.productName)?.productCost) || 0;
+                    const masterProduct = product.find(p => p._id === item.productId || p.productName === item.productName);
+                    
+                    // Priority: 1. Item-level cost (new bills), 2. Master cost (fallback), 3. Zero
+                    const cost = Number(item.productCost) || Number(masterProduct?.productCost) || 0;
+                    
+                    // Priority: 1. Item-level price (new bills), 2. Master price (fallback), 3. Zero
+                    // This prevents negative profit if the old bill didn't store item-level prices
+                    const unitPrice = Number(item.productPrice) || Number(masterProduct?.productPrice) || 0;
                     
                     const qty = Number(item.productQuantity || 1);
                     totalCOGS += (cost * qty);
@@ -167,10 +172,16 @@ function AdminAudit() {
                                         let billProfit = 0;
                                         if (bill.products && Array.isArray(bill.products)) {
                                             bill.products.forEach(item => {
-                                                const cost = Number(item.productCost) || 
-                                                             Number(product.find(p => p._id === item.productId || p.productName === item.productName)?.productCost) || 0;
+                                                const masterProduct = product.find(p => p._id === item.productId || p.productName === item.productName);
+                                                
+                                                // Priority: 1. Item-level cost (new) / 2. Master cost (old)
+                                                const cost = Number(item.productCost) || Number(masterProduct?.productCost) || 0;
+                                                
+                                                // Priority: 1. Item-level price (new) / 2. Master price (old)
+                                                // Fixing the negative profit bug for old production database records
+                                                const sellingPrice = Number(item.productPrice) || Number(masterProduct?.productPrice) || 0;
+                                                
                                                 const qty = Number(item.productQuantity || 1);
-                                                const sellingPrice = Number(item.productPrice || 0);
                                                 billProfit += (sellingPrice - cost) * qty;
                                             });
                                         }
