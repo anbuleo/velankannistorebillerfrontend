@@ -21,15 +21,20 @@ function PrintItems({ props }) {
     >
       <style dangerouslySetInnerHTML={{ __html: `
         @media print {
-          @page { size: 80mm auto; margin: 0; }
-          body * { visibility: hidden; opacity: 0; }
-          #printpaper, #printpaper * { visibility: visible; opacity: 1; }
+          @page { 
+            size: 80mm auto; 
+            margin: 0; 
+          }
+          html, body {
+            margin: 0 !important;
+            padding: 0 !important;
+            width: 80mm !important;
+            background: white !important;
+          }
           #printpaper { 
-            position: absolute; 
-            left: 0; 
-            top: 0; 
             width: 80mm !important; 
-            display: block !important;
+            margin: 0 !important;
+            padding: 4px !important;
           }
         }
       ` }} />
