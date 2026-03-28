@@ -154,11 +154,11 @@ function AdminAudit() {
                         <div className="flex-1 overflow-y-auto">
                             <table className="premium-table">
                                 <thead className="sticky top-0 bg-surface-50 z-10">
-                                    <tr>
-                                        <th>Customer</th>
-                                        <th className="text-center">Mode</th>
-                                        <th className="text-right">Amount</th>
-                                        <th className="text-right">Margin</th>
+                                    <tr className="tamil-font">
+                                        <th className="font-black">வாடிக்கையாளர்</th> {/* Customer */}
+                                        <th className="text-center font-black">வகை</th> {/* Mode */}
+                                        <th className="text-right font-black">மொத்தம்</th> {/* Total/Amount */}
+                                        <th className="text-right font-black">லாபம்</th> {/* Profit/Margin */}
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -176,10 +176,10 @@ function AdminAudit() {
                                         }
 
                                         return (
-                                            <tr key={bill._id || i} className="hover:bg-surface-50">
+                                            <tr key={bill._id || i} className="hover:bg-surface-50 font-black">
                                                 <td>
-                                                    <p className="font-bold text-surface-900 text-xs uppercase">{bill.customerName || 'Walk-in'}</p>
-                                                    <p className="text-[9px] text-surface-400 font-bold">{new Date(bill.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+                                                    <p className="font-black text-surface-900 text-xs uppercase">{bill.customerName || 'Walk-in'}</p>
+                                                    <p className="text-[9px] text-surface-400 font-black">{new Date(bill.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
                                                 </td>
                                                 <td className="text-center">
                                                     <span className={`badge text-[9px] font-bold uppercase tracking-wider text-white border-none ${(bill.paymentType || '').toLowerCase() === 'cash' ? 'badge-success' :

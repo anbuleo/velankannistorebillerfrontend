@@ -655,6 +655,7 @@ function InstaBiller() {
                 today: new Date().toLocaleDateString(), 
                 contentRef: null, 
                 isPickingSlip, 
+                isOnline: paymentType === 'online',
                 appUserName: userData?.name || 'VELANKANNI STORE' 
               }} />
             </div>
@@ -670,6 +671,7 @@ function InstaBiller() {
                   today: new Date().toLocaleDateString(), 
                   contentRef: null, 
                   isPickingSlip, 
+                  isOnline: paymentType === 'online',
                   appUserName: userData?.name || 'VELANKANNI STORE' 
                 }} />
               </div>
