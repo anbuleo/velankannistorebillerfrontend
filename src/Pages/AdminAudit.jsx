@@ -4,19 +4,21 @@ import { MdAccountBalance, MdTrendingUp, MdTrendingDown, MdAssessment, MdSearch,
 import AxiosService from '../common/Axioservice'
 import { toast } from 'react-toastify'
 import PinGate from '../components/PinGate'
+import GetAllProductHook from '../Hooks/GetAllProductHook'
 
 function AdminAudit() {
     const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0])
     const [dailyExpenses, setDailyExpenses] = useState([])
     const [loading, setLoading] = useState(false)
+    const { getUSer, loading: loadingBills } = GetAllProductHook()
 
     // Get all bills from Redux store
     const { bills = [] } = useSelector((state) => state.sale || { bills: [] })
+    const { product = [] } = useSelector((state) => state.product || { product: [] })
 
     const fetchExpensesByDate = async (date) => {
         setLoading(true)
         try {
-            // Ideally backend should have a filter by date, but we can also filter all expenses if not too many
             const res = await AxiosService.get('/expense/all')
             const filtered = res.data.expenses.filter(e =>
                 new Date(e.expenseDate).toISOString().split('T')[0] === date
@@ -31,20 +33,40 @@ function AdminAudit() {
 
     useEffect(() => {
         fetchExpensesByDate(selectedDate)
-    }, [selectedDate])
+        getUSer('all') // Sync all relevant data (bills, products, etc.) for the audit
+    }, [selectedDate, getUSer])
 
-    // Filter bills for the selected date
     const dailyBills = useMemo(() => {
         return (bills || []).filter(b =>
             new Date(b.createdAt).toISOString().split('T')[0] === selectedDate
         )
     }, [bills, selectedDate])
 
-    // Financial Computations
     const stats = useMemo(() => {
-        const revenue = dailyBills.reduce((acc, cur) => acc + Number(cur.totalAmount || 0), 0)
-        const expense = dailyExpenses.reduce((acc, cur) => acc + Number(cur.expenseAmount || 0), 0)
-        const profit = revenue - expense
+        let totalRevenue = 0;
+        let totalCOGS = 0; // Cost of Goods Sold
+
+        dailyBills.forEach(bill => {
+            totalRevenue += Number(bill.totalAmount || 0);
+
+            // Calculate cost for each item in the bill
+            if (bill.products && Array.isArray(bill.products)) {
+                bill.products.forEach(item => {
+                    // Try to get cost from bill item (new bills) or fallback to product list (old bills)
+                    const cost = Number(item.productCost) || 
+                                 Number(product.find(p => p._id === item.productId || p.productName === item.productName)?.productCost) || 0;
+                    
+                    const qty = Number(item.productQuantity || 1);
+                    totalCOGS += (cost * qty);
+                });
+            }
+        });
+
+        const revenue = totalRevenue;
+        const expense = dailyExpenses.reduce((acc, cur) => acc + Number(cur.expenseAmount || 0), 0);
+        
+        // Final Profit = (Revenue - Cost of Products) - Daily Expenses
+        const profit = (revenue - totalCOGS) - expense;
 
         const cashSales = dailyBills
             .filter(b => (b.paymentType || '').toLowerCase() === 'cash')
@@ -57,7 +79,7 @@ function AdminAudit() {
             .reduce((acc, cur) => acc + Number(cur.dueAmount || 0), 0)
 
         return { revenue, expense, profit, cashSales, onlineSales, pendingSales }
-    }, [dailyBills, dailyExpenses])
+    }, [dailyBills, dailyExpenses, product])
 
     return (
         <div className="container mx-auto px-4 py-8 fade-in min-h-screen">
@@ -135,32 +157,50 @@ function AdminAudit() {
                                     <th>Customer</th>
                                     <th className="text-center">Mode</th>
                                     <th className="text-right">Amount</th>
+                                    <th className="text-right">Margin</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                {dailyBills.length > 0 ? dailyBills.map((bill, i) => (
-                                    <tr key={bill._id || i} className="hover:bg-surface-50">
-                                        <td>
-                                            <p className="font-bold text-surface-900 text-xs uppercase">{bill.customerName || 'Walk-in'}</p>
-                                            <p className="text-[9px] text-surface-400 font-bold">{new Date(bill.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
-                                        </td>
-                                        <td className="text-center">
-                                            <span className={`badge text-[9px] font-bold uppercase tracking-wider text-white border-none ${(bill.paymentType || '').toLowerCase() === 'cash' ? 'badge-success' :
-                                                (bill.paymentType || '').toLowerCase() === 'online' ? 'badge-info' :
-                                                    'badge-warning'
-                                                }`}>
-                                                {bill.paymentType || 'cash'}
-                                            </span>
-                                        </td>
-                                        <td className="text-right font-display font-bold text-surface-900 text-sm">
-                                            ₹{Number(bill.totalAmount || 0).toLocaleString()}
-                                            {Number(bill.dueAmount) > 0 && (
-                                                <p className="text-[9px] text-error font-bold">₹{bill.dueAmount} due</p>
-                                            )}
-                                        </td>
-                                    </tr>
-                                )) : (
-                                    <tr><td colSpan={3} className="text-center py-20 text-surface-400 italic">No sales recorded for this date</td></tr>
+                                {dailyBills.length > 0 ? dailyBills.map((bill, i) => {
+                                    // Calculate bill-wise profit
+                                    let billProfit = 0;
+                                    if (bill.products && Array.isArray(bill.products)) {
+                                        bill.products.forEach(item => {
+                                            const cost = Number(item.productCost) || 
+                                                         Number(product.find(p => p._id === item.productId || p.productName === item.productName)?.productCost) || 0;
+                                            const qty = Number(item.productQuantity || 1);
+                                            const sellingPrice = Number(item.productPrice || 0);
+                                            billProfit += (sellingPrice - cost) * qty;
+                                        });
+                                    }
+
+                                    return (
+                                        <tr key={bill._id || i} className="hover:bg-surface-50">
+                                            <td>
+                                                <p className="font-bold text-surface-900 text-xs uppercase">{bill.customerName || 'Walk-in'}</p>
+                                                <p className="text-[9px] text-surface-400 font-bold">{new Date(bill.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+                                            </td>
+                                            <td className="text-center">
+                                                <span className={`badge text-[9px] font-bold uppercase tracking-wider text-white border-none ${(bill.paymentType || '').toLowerCase() === 'cash' ? 'badge-success' :
+                                                    (bill.paymentType || '').toLowerCase() === 'online' ? 'badge-info' :
+                                                        'badge-warning'
+                                                    }`}>
+                                                    {bill.paymentType || 'cash'}
+                                                </span>
+                                            </td>
+                                            <td className="text-right font-display font-bold text-surface-900 text-sm">
+                                                ₹{Number(bill.totalAmount || 0).toLocaleString()}
+                                                {Number(bill.dueAmount) > 0 && (
+                                                    <p className="text-[9px] text-error font-bold">₹{bill.dueAmount} due</p>
+                                                )}
+                                            </td>
+                                            <td className="text-right font-display font-bold text-success text-sm italic">
+                                                ₹{billProfit.toLocaleString()}
+                                            </td>
+                                        </tr>
+                                    )
+                                }) : (
+                                    <tr><td colSpan={4} className="text-center py-20 text-surface-400 italic">No sales recorded for this date</td></tr>
                                 )}
                             </tbody>
                         </table>

@@ -102,7 +102,9 @@ function Table({ data }) {
                 </span>
                 <span className="text-[10px] text-surface-400 ml-1 uppercase">{item.qantityType}</span>
               </td>
-              <td className="font-mono text-[11px] text-surface-500">{item.productCode || 'N/A'}</td>
+              <td className="font-mono text-[11px] text-surface-500 max-w-[120px] truncate" title={item.productCode}>
+                {item.productCode || 'N/A'}
+              </td>
               <td className="text-right">
                 <div className="flex justify-end gap-2">
                   <button

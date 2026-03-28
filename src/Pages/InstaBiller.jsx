@@ -97,6 +97,7 @@ function InstaBiller() {
       productId: p._id,
       productName: p.productName,
       productPrice: Number(p.productPrice),
+      productCost: Number(p.productCost || 0),
       productCode: p.productCode,
       productUnit: p.unitValue,
       qantityType: p.qantityType,
@@ -136,6 +137,14 @@ function InstaBiller() {
   useEffect(() => {
     const handleKeys = (e) => {
       // Functional Keys (Standalone)
+      if (e.key === 'F1') {
+        e.preventDefault();
+        const qtyInputs = document.querySelectorAll('.qty-input');
+        if (qtyInputs.length > 0) {
+          qtyInputs[qtyInputs.length - 1].focus();
+          qtyInputs[qtyInputs.length - 1].select();
+        }
+      }
       if (e.key === 'F2') { e.preventDefault(); dispatch(addBillTab()); }
       if (e.key === 'F6') { 
         e.preventDefault(); 
@@ -432,7 +441,7 @@ function InstaBiller() {
                               step="0.001"
                               value={item.productQuantity}
                               onChange={(e) => dispatch(handleChangeInKGQty({ productId: item.productId, qty: e.target.value }))}
-                              className="w-24 h-12 bg-surface-50 border-2 border-surface-100 rounded-xl text-center font-display font-black text-lg focus:border-primary focus:bg-white transition-all outline-none"
+                              className="qty-input w-24 h-12 bg-surface-50 border-2 border-surface-100 rounded-xl text-center font-display font-black text-lg focus:border-primary focus:bg-white transition-all outline-none"
                             />
                             <div className="absolute top-1/2 -translate-y-1/2 right-2 text-[8px] font-black text-surface-300 uppercase select-none">
                               {item.qantityType}
@@ -595,6 +604,7 @@ function InstaBiller() {
             </h4>
             <div className="grid grid-cols-2 gap-3">
               {[
+                { key: 'F1', label: 'Quick Qty' },
                 { key: 'F2', label: 'New Bill' },
                 { key: 'F6', label: 'Payment Mode' },
                 { key: 'F8', label: 'Quick Save' },
@@ -630,15 +640,38 @@ function InstaBiller() {
             </div>
             <form method="dialog"><button className="w-10 h-10 rounded-full bg-white shadow-sm flex items-center justify-center hover:text-error transition-colors"><MdClose className="text-xl" /></button></form>
           </div>
-          <div className="p-10">
-            <div className="border border-dashed border-surface-300 rounded-[1.5rem] p-8 bg-surface-50/50">
-              <PrintItems props={{ cart, totalPriceInCart, customeronecart, time: currentTime, today: new Date().toLocaleDateString(), contentRef: null, isPickingSlip }} />
+          <div className="p-10 flex flex-col items-center">
+            {/* Helpful Printer Tip for Senior UX */}
+            <div className="mb-4 p-3 bg-primary/10 rounded-xl border border-primary/20 text-[10px] text-primary font-black uppercase tracking-widest text-center w-full">
+              Tip: Set "TVS RP3200 Plus" as default & paper size "80mm" in Windows
+            </div>
+            
+            <div className="border border-dashed border-surface-300 rounded-[1.5rem] p-8 bg-surface-50/50 flex justify-center">
+              <PrintItems props={{ 
+                cart, 
+                totalPriceInCart, 
+                customeronecart, 
+                time: currentTime, 
+                today: new Date().toLocaleDateString(), 
+                contentRef: null, 
+                isPickingSlip, 
+                appUserName: userData?.name || 'VELANKANNI STORE' 
+              }} />
             </div>
 
             {/* Print Engine Target */}
             <div className="hidden">
               <div ref={printRef}>
-                <PrintItems props={{ cart, totalPriceInCart, customeronecart, time: currentTime, today: new Date().toLocaleDateString(), contentRef: null, isPickingSlip }} />
+                <PrintItems props={{ 
+                  cart, 
+                  totalPriceInCart, 
+                  customeronecart, 
+                  time: currentTime, 
+                  today: new Date().toLocaleDateString(), 
+                  contentRef: null, 
+                  isPickingSlip, 
+                  appUserName: userData?.name || 'VELANKANNI STORE' 
+                }} />
               </div>
             </div>
           </div>
@@ -646,11 +679,13 @@ function InstaBiller() {
             <form method="dialog"><button className="h-14 px-8 font-black uppercase text-xs text-surface-400 hover:text-surface-900 transition-colors">Discard</button></form>
             <button
               onClick={handleEstimatePrint}
-              className="h-14 px-10 bg-primary text-white rounded-2xl font-black uppercase text-xs shadow-xl shadow-primary/20 flex items-center gap-3 transition-transform active:scale-95"
+              autoFocus
+              className="h-14 px-10 bg-primary text-white rounded-2xl font-black uppercase text-xs shadow-xl shadow-primary/20 flex items-center gap-3 transition-transform active:scale-95 hover:bg-primary-600"
             >
-              <MdPrint className="text-xl" /> Print Physical Copy
+              <MdPrint className="text-xl" /> Print to USB Thermal
             </button>
           </div>
+
         </div>
       </dialog>
     </div>
