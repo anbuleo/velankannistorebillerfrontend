@@ -25,16 +25,21 @@ function PrintBarCode({ props }) {
           margin: 0;
         }
         @media print {
+          body * { visibility: hidden; opacity: 0; }
+          .thermal-print-container, .thermal-print-container * { visibility: visible; opacity: 1; }
           html, body {
             margin: 0 !important;
             padding: 0 !important;
             width: 101.6mm;
             height: 25.4mm;
-            background: white;
-            -webkit-print-color-adjust: exact;
+            background: white !important;
           }
           .thermal-print-container {
+            position: absolute;
+            left: 0;
+            top: 0;
             width: 101.6mm;
+            display: block !important;
           }
           .label-row {
             display: flex;

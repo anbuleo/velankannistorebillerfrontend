@@ -52,42 +52,14 @@
   @apply bg-surface-300 rounded-full hover:bg-surface-400 transition-colors;
 }
 
-/* Print Styles - Optimized for 80mm Thermal Billing Printer (TVS RP3200 Plus) */
+/* Print Styles - Universal High Contrast Settings */
 @media print {
   @page {
     margin: 0;
-    size: auto; /* Allow the content to define the length */
   }
 
   html, body {
-    margin: 0 !important;
-    padding: 0 !important;
     background: white !important;
-    width: 80mm !important; /* Force width for thermal paper */
-  }
-
-  body * {
-    visibility: hidden; /* Hide everything by default */
-  }
-
-  #printpaper, #printpaper * {
-    visibility: visible; /* Show only the receipt */
-  }
-
-  #printpaper {
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 80mm !important;
-    padding: 0 !important;
-    margin: 0 !important;
-    border: none !important;
-    overflow: visible !important;
-  }
-
-  /* Hide unnecessary browser elements */
-  nav, footer, .no-print, button, .modal-box > :not(.p-10) {
-    display: none !important;
   }
 
   /* Force high contrast for thermal quality */

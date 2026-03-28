@@ -16,9 +16,23 @@ function PrintItems({ props }) {
       style={{ 
         width: '300px', // Standard 80mm width in browser pixels
         margin: '0 auto',
-        fontFamily: "'Courier New', Courier, monospace", // Traditional receipt look, or use standard sans
+        fontFamily: "'Courier New', Courier, monospace", // Traditional receipt look
       }}
     >
+      <style dangerouslySetInnerHTML={{ __html: `
+        @media print {
+          @page { size: 80mm auto; margin: 0; }
+          body * { visibility: hidden; opacity: 0; }
+          #printpaper, #printpaper * { visibility: visible; opacity: 1; }
+          #printpaper { 
+            position: absolute; 
+            left: 0; 
+            top: 0; 
+            width: 80mm !important; 
+            display: block !important;
+          }
+        }
+      ` }} />
       <div className="text-center mb-2">
         <h2 className="text-lg font-black leading-tight uppercase tamil-font">{ 'வேளாங்கண்ணி ஸ்டோர்'}</h2>
         <p className="text-[10px] lowercase italic opacity-80 mt-1">upputhuraipalayam</p>
