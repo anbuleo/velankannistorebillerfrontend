@@ -72,10 +72,11 @@ function Nav() {
       {
         label: 'Inventory',
         icon: <MdInventory />,
-        paths: ['/product', '/category', '/lowstock', '/barcodeprint', '/market-sync'],
+        paths: ['/product', '/category', '/lowstock', '/barcodeprint', '/market-sync', '/purchase'],
         links: [
           { name: 'Product Catalog', path: '/product' },
           { name: 'Categories', path: '/category' },
+          { name: 'Wholesale & Purchase', path: '/purchase' },
           { name: 'Daily Price Sync', path: '/market-sync' },
           { name: 'Low Stock Alert', path: '/lowstock' },
           { name: 'Barcode Generator', path: '/barcodeprint' }
@@ -84,8 +85,10 @@ function Nav() {
       {
         label: 'Finance',
         icon: <MdTrendingUp />,
-        paths: ['/audit', '/sale', '/expense'],
+        paths: ['/audit', '/sale', '/expense', '/reports', '/finance'],
         links: [
+          { name: 'End-to-End Finance Hub', path: '/finance' },
+          { name: 'BI & GST Reports', path: '/reports' },
           { name: 'Audit Center', path: '/audit' },
           { name: 'Sales Log', path: '/sale' },
           { name: 'Expenses', path: '/expense' }

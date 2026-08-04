@@ -616,9 +616,12 @@ function Landing() {
                         </div>
                     </div>
 
-                    <div className="pt-8 md:pt-10 border-t border-white/5 text-center">
+                    <div className="pt-8 md:pt-10 border-t border-white/5 flex flex-col md:flex-row items-center justify-between gap-4 text-center">
                         <p className="text-[8px] md:text-[10px] font-black uppercase tracking-[0.3em] text-white/20">
                             © 2026 {t.brand} Stores Dharapuram. All Systems Active.
+                        </p>
+                        <p className="text-[9px] md:text-[11px] font-black uppercase tracking-widest text-primary">
+                            Powered by <span className="text-white font-extrabold">Byte Pairs</span>
                         </p>
                     </div>
                 </div>

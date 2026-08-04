@@ -83,15 +83,19 @@ export const cartSlice = createSlice({
 
             let findProduct = bill.cart.findIndex(t => t.productId === action.payload.productId)
             if (findProduct !== -1) {
-                bill.cart[findProduct].productQuantity += 1
-                bill.cart[findProduct].productTotal = Number(bill.cart[findProduct].productQuantity) * Number(bill.cart[findProduct].productPrice)
+                const item = bill.cart[findProduct];
+                item.productQuantity += 1;
+                item.productTotal = Number(item.productQuantity) * Number(item.productPrice);
+                // Move to top so the latest scanned item is immediately visible at top
+                bill.cart.splice(findProduct, 1);
+                bill.cart.unshift(item);
             } else {
                 const newItem = {
                     ...action.payload,
                     productQuantity: 1,
                     productTotal: Number(action.payload.productPrice)
-                }
-                bill.cart.push(newItem)
+                };
+                bill.cart.unshift(newItem); // Latest item added to top of list
             }
             bill.totalPriceInCart = Math.ceil(bill.cart.reduce((acc, cur) => acc + Number(cur.productTotal), 0))
         },

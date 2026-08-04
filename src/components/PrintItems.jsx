@@ -40,7 +40,7 @@ function PrintItems({ props }) {
       ` }} />
       <div className="text-center mb-2">
         <h2 className="text-lg font-black leading-tight uppercase tamil-font">{ 'வேளாங்கண்ணி ஸ்டோர்'}</h2>
-        <p className="text-[10px] lowercase italic opacity-80 mt-1">upputhuraipalayam</p>
+        <p className="text-[10px] lowercase italic font-black mt-1">upputhuraipalayam</p>
         <p className="text-[10px] font-black mt-1">------------------------------------------</p>
       </div>
 

@@ -42,7 +42,10 @@ function Footer() {
 
         <div className="mt-12 pt-8 border-t border-surface-100 flex flex-col md:flex-row justify-between items-center gap-4">
           <p className="text-[10px] font-bold text-surface-400 tracking-widest uppercase">
-            © 2024 Velankanni Store Biller. All Rights Reserved.
+            © 2026 Velankanni Store Biller. All Rights Reserved.
+          </p>
+          <p className="text-xs font-black uppercase tracking-widest text-primary">
+            Powered by <span className="text-surface-900 font-extrabold">Byte Pairs</span>
           </p>
           <div className="flex gap-6 text-[10px] font-bold text-surface-400 tracking-widest uppercase">
             <a href="#" className="hover:text-primary transition-colors">Privacy</a>

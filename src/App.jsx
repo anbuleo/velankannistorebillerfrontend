@@ -26,6 +26,9 @@ import Expense from './Pages/Expense'
 import AdminAudit from './Pages/AdminAudit'
 import Approval from './Pages/Approval'
 import QuickPriceUpdate from './Pages/QuickPriceUpdate'
+import PurchaseManage from './Pages/PurchaseManage'
+import Reports from './Pages/Reports'
+import FinanceHub from './Pages/FinanceHub'
 
 
 import Landing from './Pages/Landing'
@@ -62,6 +65,9 @@ function App() {
           <Route path='/audit' element={<ProtectedRoute><AdminControl><AuthContext><Nav /><AdminAudit /> <Footer /></AuthContext></AdminControl></ProtectedRoute>} />
           <Route path='/market-sync' element={<ProtectedRoute><AdminControl><AuthContext><Nav /><QuickPriceUpdate /> <Footer /></AuthContext></AdminControl></ProtectedRoute>} />
           <Route path='/approval' element={<ProtectedRoute><AdminControl><AuthContext><Nav /><Approval /> <Footer /></AuthContext></AdminControl></ProtectedRoute>} />
+          <Route path='/purchase' element={<ProtectedRoute><AuthContext><Nav /><PurchaseManage /> <Footer /></AuthContext></ProtectedRoute>} />
+          <Route path='/reports' element={<ProtectedRoute><AuthContext><Nav /><Reports /> <Footer /></AuthContext></ProtectedRoute>} />
+          <Route path='/finance' element={<ProtectedRoute><AdminControl><AuthContext><Nav /><FinanceHub /> <Footer /></AuthContext></AdminControl></ProtectedRoute>} />
         </Routes>
 
       </BrowserRouter>
