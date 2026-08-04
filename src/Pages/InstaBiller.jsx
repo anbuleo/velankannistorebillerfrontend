@@ -141,8 +141,8 @@ function InstaBiller() {
         e.preventDefault();
         const qtyInputs = document.querySelectorAll('.qty-input');
         if (qtyInputs.length > 0) {
-          qtyInputs[qtyInputs.length - 1].focus();
-          qtyInputs[qtyInputs.length - 1].select();
+          qtyInputs[0].focus();
+          qtyInputs[0].select();
         }
       }
       if (e.key === 'F2') { e.preventDefault(); dispatch(addBillTab()); }
