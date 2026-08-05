@@ -93,8 +93,8 @@ function PrintItems({ props }) {
                     <span className="inline-block max-w-[160px] truncate font-extrabold text-xs" style={{ fontWeight: 900 }} title={e.productName}>
                       {e.productName}
                     </span> 
-                    <span className="text-[10px] font-extrabold block text-gray-800" style={{ fontWeight: 900 }}>
-                      ({e.productUnit} {e.qantityType})
+                    <span className="text-[5px] font-extrabold block text-gray-800" style={{ fontWeight: 600 }}>
+                      {e.productUnit} {e.qantityType}
                     </span>
                   </div>
                 </td>

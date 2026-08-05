@@ -106,6 +106,9 @@ function FinanceHub() {
     }
   };
 
+  const displayPnl = pnlData || { grossSales: 0, totalCOGS: 0, totalExpenses: 0, grossProfit: 0, netProfit: 0, netMarginPercentage: 0 };
+  const displayDayEnd = dayEndSummary || { totalBillsCount: 0, totalSalesAmount: 0, cashSales: 0, onlineSales: 0, creditSales: 0, netProfit: 0, expectedDrawerCash: 0 };
+
   return (
     <div className="container mx-auto px-4 py-8 max-w-[1400px]">
       {/* Header */}
@@ -146,31 +149,31 @@ function FinanceHub() {
       </div>
 
       {/* Tab 1: P&L Statement */}
-      {activeTab === 'pnl' && pnlData && (
+      {activeTab === 'pnl' && (
         <div className="space-y-8">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             <div className="glass-card p-6 border-l-4 border-l-primary">
               <p className="text-xs font-black text-surface-400 uppercase tracking-widest">Gross Sales Revenue</p>
-              <p className="text-3xl font-display font-black text-primary mt-2">₹{pnlData.grossSales?.toLocaleString() || 0}</p>
+              <p className="text-3xl font-display font-black text-primary mt-2">₹{(displayPnl.grossSales || 0).toLocaleString()}</p>
               <p className="text-[10px] font-bold text-surface-400 mt-1">Total Customer Billing</p>
             </div>
 
             <div className="glass-card p-6 border-l-4 border-l-indigo-500">
               <p className="text-xs font-black text-surface-400 uppercase tracking-widest">Cost of Goods Sold (COGS)</p>
-              <p className="text-3xl font-display font-black text-indigo-600 mt-2">₹{pnlData.totalCOGS?.toLocaleString() || 0}</p>
+              <p className="text-3xl font-display font-black text-indigo-600 mt-2">₹{(displayPnl.totalCOGS || 0).toLocaleString()}</p>
               <p className="text-[10px] font-bold text-surface-400 mt-1">Inventory Cost Valuation</p>
             </div>
 
             <div className="glass-card p-6 border-l-4 border-l-error">
               <p className="text-xs font-black text-surface-400 uppercase tracking-widest">Shop Expenses</p>
-              <p className="text-3xl font-display font-black text-error mt-2">₹{pnlData.totalExpenses?.toLocaleString() || 0}</p>
+              <p className="text-3xl font-display font-black text-error mt-2">₹{(displayPnl.totalExpenses || 0).toLocaleString()}</p>
               <p className="text-[10px] font-bold text-surface-400 mt-1">Rent, Electricity, Salaries</p>
             </div>
 
             <div className="glass-card p-6 border-l-4 border-l-success">
               <p className="text-xs font-black text-surface-400 uppercase tracking-widest">Net Profit</p>
-              <p className="text-3xl font-display font-black text-success mt-2">₹{pnlData.netProfit?.toLocaleString() || 0}</p>
-              <p className="text-[10px] font-bold text-success mt-1">{pnlData.netMarginPercentage}% Net Profit Margin</p>
+              <p className="text-3xl font-display font-black text-success mt-2">₹{(displayPnl.netProfit || 0).toLocaleString()}</p>
+              <p className="text-[10px] font-bold text-success mt-1">{displayPnl.netMarginPercentage || 0}% Net Profit Margin</p>
             </div>
           </div>
 
@@ -182,22 +185,22 @@ function FinanceHub() {
             <div className="space-y-4">
               <div className="flex justify-between items-center p-4 bg-surface-50 rounded-2xl border">
                 <span className="text-sm font-bold text-surface-700 uppercase">Gross Sales Revenue</span>
-                <span className="font-display font-black text-xl text-primary">₹{pnlData.grossSales?.toLocaleString()}</span>
+                <span className="font-display font-black text-xl text-primary">₹{(displayPnl.grossSales || 0).toLocaleString()}</span>
               </div>
 
               <div className="flex justify-between items-center p-4 bg-surface-50 rounded-2xl border">
                 <span className="text-sm font-bold text-surface-700 uppercase">(-) Cost of Goods Sold (COGS)</span>
-                <span className="font-display font-black text-xl text-indigo-600">- ₹{pnlData.totalCOGS?.toLocaleString()}</span>
+                <span className="font-display font-black text-xl text-indigo-600">- ₹{(displayPnl.totalCOGS || 0).toLocaleString()}</span>
               </div>
 
               <div className="flex justify-between items-center p-4 bg-primary/10 rounded-2xl border border-primary/20">
                 <span className="text-sm font-black text-primary uppercase">(=) Gross Profit</span>
-                <span className="font-display font-black text-2xl text-primary">₹{pnlData.grossProfit?.toLocaleString()}</span>
+                <span className="font-display font-black text-2xl text-primary">₹{(displayPnl.grossProfit || 0).toLocaleString()}</span>
               </div>
 
               <div className="flex justify-between items-center p-4 bg-surface-50 rounded-2xl border">
                 <span className="text-sm font-bold text-surface-700 uppercase">(-) Operating Shop Expenses</span>
-                <span className="font-display font-black text-xl text-error">- ₹{pnlData.totalExpenses?.toLocaleString()}</span>
+                <span className="font-display font-black text-xl text-error">- ₹{(displayPnl.totalExpenses || 0).toLocaleString()}</span>
               </div>
 
               <div className="divider my-2"></div>
@@ -205,11 +208,11 @@ function FinanceHub() {
               <div className="flex justify-between items-center p-6 bg-surface-900 text-white rounded-3xl">
                 <div>
                   <p className="text-xs font-black uppercase text-white/50">Net Business Profit</p>
-                  <p className="text-3xl font-display font-black text-success mt-1">₹{pnlData.netProfit?.toLocaleString()}</p>
+                  <p className="text-3xl font-display font-black text-success mt-1">₹{(displayPnl.netProfit || 0).toLocaleString()}</p>
                 </div>
                 <div className="text-right">
                   <span className="px-4 py-2 bg-success text-white rounded-xl font-black text-sm uppercase">
-                    {pnlData.netMarginPercentage}% Margin
+                    {displayPnl.netMarginPercentage || 0}% Margin
                   </span>
                 </div>
               </div>
@@ -240,34 +243,32 @@ function FinanceHub() {
               </button>
             </div>
 
-            {dayEndSummary && (
-              <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-4 pt-6 border-t border-white/10">
-                <div>
-                  <p className="text-[10px] font-bold text-white/50 uppercase">Total Bills</p>
-                  <p className="text-2xl font-display font-black text-white mt-1">{dayEndSummary.totalBillsCount}</p>
-                </div>
-                <div>
-                  <p className="text-[10px] font-bold text-white/50 uppercase">Total Sales</p>
-                  <p className="text-2xl font-display font-black text-primary mt-1">₹{(dayEndSummary.totalSalesAmount || 0).toLocaleString()}</p>
-                </div>
-                <div>
-                  <p className="text-[10px] font-bold text-white/50 uppercase">Cash Sales</p>
-                  <p className="text-2xl font-display font-black text-success mt-1">₹{(dayEndSummary.cashSales || 0).toLocaleString()}</p>
-                </div>
-                <div>
-                  <p className="text-[10px] font-bold text-white/50 uppercase">Online / UPI</p>
-                  <p className="text-2xl font-display font-black text-info mt-1">₹{(dayEndSummary.onlineSales || 0).toLocaleString()}</p>
-                </div>
-                <div>
-                  <p className="text-[10px] font-bold text-white/50 uppercase">Udhar / Credit</p>
-                  <p className="text-2xl font-display font-black text-warning mt-1">₹{(dayEndSummary.creditSales || 0).toLocaleString()}</p>
-                </div>
-                <div>
-                  <p className="text-[10px] font-bold text-white/50 uppercase">Today Net Profit</p>
-                  <p className="text-2xl font-display font-black text-success mt-1">₹{(dayEndSummary.netProfit || 0).toLocaleString()}</p>
-                </div>
+            <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-4 pt-6 border-t border-white/10">
+              <div>
+                <p className="text-[10px] font-bold text-white/50 uppercase">Total Bills</p>
+                <p className="text-2xl font-display font-black text-white mt-1">{displayDayEnd.totalBillsCount || 0}</p>
               </div>
-            )}
+              <div>
+                <p className="text-[10px] font-bold text-white/50 uppercase">Total Sales</p>
+                <p className="text-2xl font-display font-black text-primary mt-1">₹{(displayDayEnd.totalSalesAmount || 0).toLocaleString()}</p>
+              </div>
+              <div>
+                <p className="text-[10px] font-bold text-white/50 uppercase">Cash Sales</p>
+                <p className="text-2xl font-display font-black text-success mt-1">₹{(displayDayEnd.cashSales || 0).toLocaleString()}</p>
+              </div>
+              <div>
+                <p className="text-[10px] font-bold text-white/50 uppercase">Online / UPI</p>
+                <p className="text-2xl font-display font-black text-info mt-1">₹{(displayDayEnd.onlineSales || 0).toLocaleString()}</p>
+              </div>
+              <div>
+                <p className="text-[10px] font-bold text-white/50 uppercase">Udhar / Credit</p>
+                <p className="text-2xl font-display font-black text-warning mt-1">₹{(displayDayEnd.creditSales || 0).toLocaleString()}</p>
+              </div>
+              <div>
+                <p className="text-[10px] font-bold text-white/50 uppercase">Today Net Profit</p>
+                <p className="text-2xl font-display font-black text-success mt-1">₹{(displayDayEnd.netProfit || 0).toLocaleString()}</p>
+              </div>
+            </div>
           </div>
 
           <div className="glass-card p-6">
