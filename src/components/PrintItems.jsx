@@ -88,21 +88,21 @@ function PrintItems({ props }) {
           <tbody>
             {cart?.length > 0 ? cart.map((e, i) => (
               <tr key={i} className="text-xs font-extrabold border-b border-gray-300 last:border-0" style={{ fontWeight: 900 }}>
-                <td className="py-1.5 align-top">
+                <td className="py-0.5 align-top">
                   <div className="uppercase">
                     <span className="inline-block max-w-[160px] truncate font-extrabold text-xs" style={{ fontWeight: 900 }} title={e.productName}>
                       {e.productName}
                     </span> 
-                    <span className="text-[5px] font-extrabold block text-gray-800" style={{ fontWeight: 900 }}>
+                    <span className="text-[10px] font-extrabold block text-gray-800" style={{ fontWeight: 900 }}>
                       ({e.productUnit} {e.qantityType})
                     </span>
                   </div>
                 </td>
-                <td className="text-center py-1.5 align-top font-extrabold text-xs" style={{ fontWeight: 900 }}>
+                <td className="text-center py-0.5 align-top font-extrabold text-xs" style={{ fontWeight: 900 }}>
                   {e.productQuantity}
                 </td>
                 {!isPickingSlip && (
-                  <td className="text-right py-1.5 align-top font-extrabold text-sm" style={{ fontWeight: 900 }}>
+                  <td className="text-right py-0.5 align-top font-extrabold text-sm" style={{ fontWeight: 900 }}>
                     ₹{Math.ceil(Number(e.productPrice * e.productQuantity))}
                   </td>
                 )}
