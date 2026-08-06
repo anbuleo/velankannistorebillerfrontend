@@ -122,12 +122,18 @@ function InstaBiller() {
     }
 
     try {
+      // Senior Dev Ultra-Fast Checkout: Trigger print dialog immediately if requested
+      if (shouldPrint) {
+        handleEstimatePrint();
+      }
+
       await createBill(paymentType, cart, totalPriceInCart, customeronecart, paymentStatus);
-      if (shouldPrint) handleEstimatePrint();
 
       toast.success("Transaction Finalized");
       dispatch(resetCart());
-      getUSer();
+
+      // Background non-blocking sync
+      setTimeout(() => getUSer(), 0);
     } catch (err) {
       toast.error("Process Failed");
     }
