@@ -50,7 +50,11 @@ function genrateBill() {
             try {
                 let res = await AxiosService.post('/saleprint/printbill', val)
                 if (res.status == 201) {
-                    return { ...res.data, billNumber };
+                    const serverBill = res.data?.bill || res.data;
+                    if (serverBill && serverBill._id) {
+                        dispatch(addAllBills([serverBill, ...(bills || [])]));
+                    }
+                    return { ...res.data, billNumber: serverBill?.billNumber || billNumber };
                 }
             } catch (error) {
                 console.warn("Online sync failed, falling back to local queue", error);
@@ -75,7 +79,7 @@ function genrateBill() {
         }
     }
 
-    return { billLoading, getCustomer, createBill }
+    return { billLoading, getCustomer, createBill, getNextBillNumber }
 }
 
 export default genrateBill

@@ -46,7 +46,7 @@ function InstaBiller() {
   const { bills = [], activeBillId } = useSelector((state) => state.cart || { bills: [], activeBillId: null })
   const { customer = [] } = useSelector((state) => state.customer)
   const { balanceSheet = [] } = useSelector((state) => state.balancesheet || { balanceSheet: [] });
-  const { sale = [] } = useSelector((state) => state.sale || { sale: [] });
+  const saleBills = useSelector((state) => state.sale?.bills || []);
   const userData = JSON.parse(localStorage.getItem('data'))
   const isAdmin = userData?.role === 'admin'
 
@@ -64,11 +64,11 @@ function InstaBiller() {
 
   const currentInvoiceNo = useMemo(() => {
     return getNextBillNumber ? getNextBillNumber() : '010001';
-  }, [cart, bills, sale, getNextBillNumber]);
+  }, [cart, bills, saleBills, getNextBillNumber]);
 
   const recentTwoBills = useMemo(() => {
-    return Array.isArray(sale) ? sale.slice(0, 2) : [];
-  }, [sale]);
+    return Array.isArray(saleBills) ? saleBills.slice(0, 2) : [];
+  }, [saleBills]);
 
   const handleEditPastBill = (pastBill) => {
     if (!pastBill || !Array.isArray(pastBill.products) || pastBill.products.length === 0) {
@@ -247,9 +247,10 @@ function InstaBiller() {
   // Initial Sync
   useEffect(() => {
     dispatch(ensureActiveBill());
+    getUSer('all');
     const clock = setInterval(() => setCurrentTime(new Date().toLocaleTimeString()), 1000);
     return () => clearInterval(clock);
-  }, [dispatch]);
+  }, [dispatch, getUSer]);
 
   if (!currentBill) return <div className="h-screen flex items-center justify-center text-primary font-black animate-pulse">Initializing Counter...</div>;
 
