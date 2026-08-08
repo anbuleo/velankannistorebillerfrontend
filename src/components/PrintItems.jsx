@@ -7,7 +7,7 @@ import QrCodeGen from './QrCodeGen'
  * Heavy extra-bold typography & enlarged font sizing for maximum thermal contrast.
  */
 function PrintItems({ props }) {
-  let { cart, totalPriceInCart, time, today, contentRef, customeronecart, appUserName, isOnline, isPickingSlip } = props
+  let { cart, totalPriceInCart, time, today, contentRef, customeronecart, appUserName, isOnline, isPickingSlip, billNumber } = props
 
   return (
     <div 
@@ -66,6 +66,7 @@ function PrintItems({ props }) {
       {/* Customer & Timestamp Bar */}
       <div className="flex justify-between text-xs mb-2 px-1 font-extrabold" style={{ fontWeight: 900 }}>
         <div className="w-1/2">
+          {billNumber && <p className="font-extrabold text-xs" style={{ fontWeight: 900 }}>BILL: {billNumber}</p>}
           <p className="font-extrabold" style={{ fontWeight: 900 }}>CUST: {customeronecart?.name || 'CASH'}</p>
           {customeronecart?.mobile && <p className="text-xs font-extrabold" style={{ fontWeight: 900 }}>{customeronecart?.mobile}</p>}
         </div>

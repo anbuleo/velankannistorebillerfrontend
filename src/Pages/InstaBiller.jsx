@@ -46,8 +46,11 @@ function InstaBiller() {
   const { bills = [], activeBillId } = useSelector((state) => state.cart || { bills: [], activeBillId: null })
   const { customer = [] } = useSelector((state) => state.customer)
   const { balanceSheet = [] } = useSelector((state) => state.balancesheet || { balanceSheet: [] });
+  const { sale = [] } = useSelector((state) => state.sale || { sale: [] });
   const userData = JSON.parse(localStorage.getItem('data'))
   const isAdmin = userData?.role === 'admin'
+
+  const [viewRecentBill, setViewRecentBill] = useState(null);
 
   // Current Active Context
   const currentBill = useMemo(() => {
@@ -57,7 +60,49 @@ function InstaBiller() {
 
   const { cart = [], totalPriceInCart = 0, customeronecart = { name: 'Retail Customer' } } = currentBill || {};
 
-  const { createBill } = genrateBill()
+  const { createBill, getNextBillNumber } = genrateBill()
+
+  const currentInvoiceNo = useMemo(() => {
+    return getNextBillNumber ? getNextBillNumber() : 'INV-001';
+  }, [cart, bills, sale, getNextBillNumber]);
+
+  const recentTwoBills = useMemo(() => {
+    return Array.isArray(sale) ? sale.slice(0, 2) : [];
+  }, [sale]);
+
+  const handleEditPastBill = (pastBill) => {
+    if (!pastBill || !Array.isArray(pastBill.products) || pastBill.products.length === 0) {
+      return toast.warning("No items in selected bill to edit");
+    }
+
+    dispatch(resetCart());
+
+    pastBill.products.forEach(p => {
+      dispatch(addProductToCart({
+        productId: p.productId || p._id,
+        productName: p.productName,
+        productPrice: Number(p.productPrice || 0),
+        productCost: Number(p.productCost || 0),
+        productCode: p.productCode || '',
+        productUnit: p.productUnit || p.unitValue || 1,
+        qantityType: p.qantityType || 'pcs'
+      }));
+    });
+
+    if (pastBill.customerName) {
+      dispatch(addCustomerBillOne({
+        name: pastBill.customerName,
+        mobile: pastBill.customerMobile || '',
+        _id: pastBill.customerId || null
+      }));
+    }
+
+    if (pastBill.paymentType) setPaymentType(pastBill.paymentType);
+    if (pastBill.dueAmount > 0) setPaymentStatus('pending');
+    else setPaymentStatus('paid');
+
+    toast.success(`Loaded Bill #${pastBill.billNumber || 'Recent'} into active workspace!`);
+  };
 
   // Print Logic
   const handleEstimatePrint = useReactToPrint({
@@ -573,32 +618,71 @@ function InstaBiller() {
 
           {/* Quick Stats / History Integration */}
           <div className="glass-card p-6 space-y-6">
-            <h4 className="text-[10px] font-black uppercase tracking-widest text-surface-400 flex items-center gap-2">
-              <MdHistory className="text-primary text-lg" /> Recent Node Activity
+            <h4 className="text-[10px] font-black uppercase tracking-widest text-surface-400 flex items-center justify-between">
+              <span className="flex items-center gap-2"><MdHistory className="text-primary text-lg" /> Recent 2 Bills</span>
+              <span className="text-[9px] bg-primary/10 text-primary px-2 py-0.5 rounded-full font-black">Live Node</span>
             </h4>
-            <div className="space-y-4">
-              {isAdmin ? (
+            
+            {/* Recent 2 Bills List */}
+            {recentTwoBills.length > 0 ? (
+              <div className="space-y-3">
+                {recentTwoBills.map((b, idx) => (
+                  <div key={b._id || idx} className="p-3 bg-surface-50 rounded-2xl border border-surface-200 hover:border-primary/30 transition-all space-y-2">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <p className="text-xs font-black text-surface-900">{b.billNumber || `INV-${b._id?.slice(-4)}`}</p>
+                        <p className="text-[10px] font-bold text-surface-400">{b.customerName || 'Retail Customer'} • {new Date(b.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+                      </div>
+                      <span className="text-sm font-display font-black text-primary">₹{b.totalAmount}</span>
+                    </div>
+
+                    <div className="flex items-center justify-between pt-1 border-t border-surface-200/50">
+                      <span className={`text-[9px] font-black uppercase px-2 py-0.5 rounded-md ${b.paymentType === 'online' ? 'bg-info/10 text-info' : b.paymentType === 'credit' ? 'bg-warning/10 text-warning' : 'bg-success/10 text-success'}`}>
+                        {b.paymentType || 'CASH'}
+                      </span>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => {
+                            setViewRecentBill(b);
+                            document.getElementById('view_estimate').showModal();
+                          }}
+                          className="px-2.5 py-1 bg-surface-200 hover:bg-primary hover:text-white rounded-lg text-[10px] font-black uppercase transition-all flex items-center gap-1"
+                        >
+                          <MdFactCheck className="text-xs" /> View
+                        </button>
+                        <button
+                          onClick={() => handleEditPastBill(b)}
+                          className="px-2.5 py-1 bg-primary text-white hover:bg-primary-600 rounded-lg text-[10px] font-black uppercase transition-all flex items-center gap-1 shadow-sm"
+                        >
+                          <MdSave className="text-xs" /> Edit / Load
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-[10px] font-black uppercase text-surface-400 italic text-center py-2">No recent bills yet today</p>
+            )}
+
+            <div className="space-y-2 pt-2 border-t border-surface-200">
+              {isAdmin && (
                 <>
                   <button
-                    onClick={() => { setIsPickingSlip(false); document.getElementById('view_estimate').showModal(); }}
-                    className="w-full h-12 flex items-center justify-between px-6 rounded-xl bg-surface-50 hover:bg-white border-2 border-surface-100 transition-all group"
+                    onClick={() => { setViewRecentBill(null); setIsPickingSlip(false); document.getElementById('view_estimate').showModal(); }}
+                    className="w-full h-10 flex items-center justify-between px-4 rounded-xl bg-surface-50 hover:bg-white border border-surface-200 transition-all group"
                   >
-                    <span className="text-[10px] font-black uppercase text-surface-500 group-hover:text-primary transition-colors">Visual Preview Log</span>
-                    <MdFactCheck className="text-xl text-surface-300 group-hover:text-primary transition-colors" />
+                    <span className="text-[10px] font-black uppercase text-surface-500 group-hover:text-primary transition-colors">Visual Terminal Draft</span>
+                    <MdFactCheck className="text-lg text-surface-300 group-hover:text-primary transition-colors" />
                   </button>
                   <button
-                    onClick={() => { setIsPickingSlip(true); document.getElementById('view_estimate').showModal(); }}
-                    className="w-full h-12 flex items-center justify-between px-6 rounded-xl bg-surface-50 hover:bg-white border-2 border-surface-100 transition-all group"
+                    onClick={() => { setViewRecentBill(null); setIsPickingSlip(true); document.getElementById('view_estimate').showModal(); }}
+                    className="w-full h-10 flex items-center justify-between px-4 rounded-xl bg-surface-50 hover:bg-white border border-surface-200 transition-all group"
                   >
                     <span className="text-[10px] font-black uppercase text-surface-500 group-hover:text-indigo-500 transition-colors">Generate Picking Slip</span>
-                    <MdLibraryAdd className="text-xl text-surface-300 group-hover:text-indigo-500 transition-colors" />
+                    <MdLibraryAdd className="text-lg text-surface-300 group-hover:text-indigo-500 transition-colors" />
                   </button>
                 </>
-              ) : (
-                <div className="p-10 text-center opacity-20">
-                  <MdKeyboard className="text-4xl mx-auto mb-2" />
-                  <p className="text-[10px] font-black uppercase italic">Standard Ops Mode</p>
-                </div>
               )}
             </div>
           </div>
@@ -641,7 +725,9 @@ function InstaBiller() {
         <div className="modal-box max-w-2xl bg-white p-0 overflow-hidden rounded-[2rem] shadow-2xl">
           <div className="p-8 bg-surface-50 border-b flex items-center justify-between">
             <div>
-              <h3 className="text-2xl font-display font-black text-surface-900 leading-none">Document Preview</h3>
+              <h3 className="text-2xl font-display font-black text-surface-900 leading-none">
+                {viewRecentBill ? `Invoice #${viewRecentBill.billNumber}` : 'Document Preview'}
+              </h3>
               <p className="text-[10px] font-black text-surface-400 uppercase mt-1 tracking-widest">Digital Terminal Draft</p>
             </div>
             <form method="dialog"><button className="w-10 h-10 rounded-full bg-white shadow-sm flex items-center justify-center hover:text-error transition-colors"><MdClose className="text-xl" /></button></form>
@@ -654,14 +740,15 @@ function InstaBiller() {
             
             <div className="border border-dashed border-surface-300 rounded-[1.5rem] p-8 bg-surface-50/50 flex justify-center">
               <PrintItems props={{ 
-                cart, 
-                totalPriceInCart, 
-                customeronecart, 
-                time: currentTime, 
-                today: new Date().toLocaleDateString(), 
+                cart: viewRecentBill ? viewRecentBill.products : cart, 
+                totalPriceInCart: viewRecentBill ? viewRecentBill.totalAmount : totalPriceInCart, 
+                customeronecart: viewRecentBill ? { name: viewRecentBill.customerName, mobile: viewRecentBill.customerMobile } : customeronecart, 
+                time: viewRecentBill ? new Date(viewRecentBill.createdAt).toLocaleTimeString() : currentTime, 
+                today: viewRecentBill ? new Date(viewRecentBill.createdAt).toLocaleDateString() : new Date().toLocaleDateString(), 
                 contentRef: null, 
                 isPickingSlip, 
-                isOnline: paymentType === 'online',
+                isOnline: viewRecentBill ? viewRecentBill.paymentType === 'online' : paymentType === 'online',
+                billNumber: viewRecentBill ? viewRecentBill.billNumber : currentInvoiceNo,
                 appUserName: userData?.name || 'VELANKANNI STORE' 
               }} />
             </div>
@@ -670,14 +757,15 @@ function InstaBiller() {
             <div className="hidden">
               <div ref={printRef}>
                 <PrintItems props={{ 
-                  cart, 
-                  totalPriceInCart, 
-                  customeronecart, 
-                  time: currentTime, 
-                  today: new Date().toLocaleDateString(), 
+                  cart: viewRecentBill ? viewRecentBill.products : cart, 
+                  totalPriceInCart: viewRecentBill ? viewRecentBill.totalAmount : totalPriceInCart, 
+                  customeronecart: viewRecentBill ? { name: viewRecentBill.customerName, mobile: viewRecentBill.customerMobile } : customeronecart, 
+                  time: viewRecentBill ? new Date(viewRecentBill.createdAt).toLocaleTimeString() : currentTime, 
+                  today: viewRecentBill ? new Date(viewRecentBill.createdAt).toLocaleDateString() : new Date().toLocaleDateString(), 
                   contentRef: null, 
                   isPickingSlip, 
-                  isOnline: paymentType === 'online',
+                  isOnline: viewRecentBill ? viewRecentBill.paymentType === 'online' : paymentType === 'online',
+                  billNumber: viewRecentBill ? viewRecentBill.billNumber : currentInvoiceNo,
                   appUserName: userData?.name || 'VELANKANNI STORE' 
                 }} />
               </div>
