@@ -63,7 +63,7 @@ function InstaBiller() {
   const { createBill, getNextBillNumber } = genrateBill()
 
   const currentInvoiceNo = useMemo(() => {
-    return getNextBillNumber ? getNextBillNumber() : 'INV-001';
+    return getNextBillNumber ? getNextBillNumber() : '010001';
   }, [cart, bills, sale, getNextBillNumber]);
 
   const recentTwoBills = useMemo(() => {

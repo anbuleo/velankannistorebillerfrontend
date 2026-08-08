@@ -16,24 +16,11 @@ function genrateBill() {
     const { bills } = useSelector(state => state.sale || { bills: [] });
     const { pendingBills } = useSelector(state => state.offline || { pendingBills: [] });
 
-    // Enterprise Invoice Series Generator
+    // Enterprise Invoice Series Generator (010001 format)
     const getNextBillNumber = () => {
-        const now = new Date();
-        const yy = now.getFullYear().toString().slice(-2);
-        const mm = (now.getMonth() + 1).toString().padStart(2, '0');
-
-        // Combined count of server bills + local pending bills to prevent collisions
-        const totalRelevantBills = [
-            ...(bills || []),
-            ...(pendingBills || [])
-        ].filter(b => {
-            const billDate = new Date(b.createdAt || b.queuedAt);
-            return billDate.getMonth() === now.getMonth() &&
-                billDate.getFullYear() === now.getFullYear();
-        });
-
-        const serial = (totalRelevantBills.length + 1).toString().padStart(3, '0');
-        return `INV-${yy}-${mm}-${serial}`;
+        const totalCount = (bills?.length || 0) + (pendingBills?.length || 0);
+        const serial = (totalCount + 1).toString().padStart(4, '0');
+        return `01${serial}`;
     };
 
     const createBill = async (paymentType, cart, totalPriceInCart, customeronecart, paymentStatus = 'paid') => {
