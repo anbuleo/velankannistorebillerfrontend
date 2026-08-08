@@ -81,6 +81,7 @@ function PrintItems({ props }) {
           <thead>
             <tr className="text-xs font-extrabold border-b-2 border-black" style={{ fontWeight: 900 }}>
               <th className="py-1">விவரம்</th>
+              {!isPickingSlip && <th className="text-center py-1 px-1">விலை</th>}
               <th className="text-center py-1">அளவு</th>
               {!isPickingSlip && <th className="text-right py-1">மொத்தம்</th>}
             </tr>
@@ -90,7 +91,7 @@ function PrintItems({ props }) {
               <tr key={i} className="text-xs font-extrabold border-b border-gray-300 last:border-0" style={{ fontWeight: 900 }}>
                 <td className="py-0.5 align-top">
                   <div className="uppercase">
-                    <span className="inline-block max-w-[160px] truncate font-extrabold text-xs" style={{ fontWeight: 900 }} title={e.productName}>
+                    <span className="inline-block max-w-[130px] truncate font-extrabold text-xs" style={{ fontWeight: 900 }} title={e.productName}>
                       {e.productName}
                     </span> 
                     <span className="text-[10px] font-extrabold block text-gray-800" style={{ fontWeight: 900 }}>
@@ -98,6 +99,11 @@ function PrintItems({ props }) {
                     </span>
                   </div>
                 </td>
+                {!isPickingSlip && (
+                  <td className="text-center py-0.5 align-top font-extrabold text-xs px-1" style={{ fontWeight: 900 }}>
+                    ₹{e.productPrice}
+                  </td>
+                )}
                 <td className="text-center py-0.5 align-top font-extrabold text-xs" style={{ fontWeight: 900 }}>
                   {e.productQuantity}
                 </td>
