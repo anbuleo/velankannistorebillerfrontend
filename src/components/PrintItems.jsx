@@ -124,6 +124,7 @@ function PrintItems({ props }) {
           <div className="flex justify-between text-xs font-extrabold border-b-2 border-dashed border-black pb-1.5" style={{ fontWeight: 900 }}>
             <span>TOTAL ITEMS:</span>
             <span className="text-sm font-extrabold" style={{ fontWeight: 900 }}>{cart?.length}</span>
+            <span className="text-sm font-extrabold" style={{ fontWeight: 900 }}></span>
           </div>
           <div className="flex justify-between items-center text-lg font-extrabold pt-1.5" style={{ fontWeight: 900 }}>
             <span>GRAND TOTAL:</span>
