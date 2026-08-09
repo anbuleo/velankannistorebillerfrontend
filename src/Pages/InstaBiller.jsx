@@ -52,6 +52,8 @@ function InstaBiller() {
 
   const [viewRecentBill, setViewRecentBill] = useState(null);
 
+  const [editingBill, setEditingBill] = useState(null);
+
   // Current Active Context
   const currentBill = useMemo(() => {
     if (!Array.isArray(bills) || bills.length === 0) return null;
@@ -63,8 +65,9 @@ function InstaBiller() {
   const { createBill, getNextBillNumber } = genrateBill()
 
   const currentInvoiceNo = useMemo(() => {
+    if (editingBill?.billNumber) return editingBill.billNumber;
     return getNextBillNumber ? getNextBillNumber() : '010001';
-  }, [cart, bills, saleBills, getNextBillNumber]);
+  }, [cart, bills, saleBills, getNextBillNumber, editingBill]);
 
   const recentTwoBills = useMemo(() => {
     return Array.isArray(saleBills) ? saleBills.slice(0, 2) : [];
@@ -74,6 +77,11 @@ function InstaBiller() {
     if (!pastBill || !Array.isArray(pastBill.products) || pastBill.products.length === 0) {
       return toast.warning("No items in selected bill to edit");
     }
+
+    setEditingBill({
+      _id: pastBill._id,
+      billNumber: pastBill.billNumber || `01${pastBill._id?.slice(-4)}`
+    });
 
     dispatch(resetCart());
 
@@ -101,7 +109,13 @@ function InstaBiller() {
     if (pastBill.dueAmount > 0) setPaymentStatus('pending');
     else setPaymentStatus('paid');
 
-    toast.success(`Loaded Bill #${pastBill.billNumber || 'Recent'} into active workspace!`);
+    toast.info(`Editing Mode: Bill #${pastBill.billNumber || 'Selected'}`);
+  };
+
+  const handleCancelEdit = () => {
+    setEditingBill(null);
+    dispatch(resetCart());
+    toast.info("Cancelled bill editing. Workspace reset.");
   };
 
   // Print Logic
@@ -167,20 +181,42 @@ function InstaBiller() {
     }
 
     try {
-      // Senior Dev Ultra-Fast Checkout: Trigger print dialog immediately if requested
       if (shouldPrint) {
         handleEstimatePrint();
       }
 
-      await createBill(paymentType, cart, totalPriceInCart, customeronecart, paymentStatus);
+      if (editingBill && editingBill._id) {
+        // Edit Existing Bill Mode via PUT /saleprint/editbillbyid/:id
+        const paidAmount = paymentStatus === 'paid' ? totalPriceInCart : 0;
+        const dueAmount = paymentStatus === 'paid' ? 0 : totalPriceInCart;
 
-      toast.success("Transaction Finalized");
-      dispatch(resetCart());
+        const updatePayload = {
+          customerName: customeronecart?.name || 'customer',
+          customerId: customeronecart?._id || null,
+          customerMobile: customeronecart?.mobile || null,
+          totalAmount: totalPriceInCart,
+          paidAmount,
+          dueAmount,
+          products: cart,
+          paymentType
+        };
 
-      // Background non-blocking sync
-      setTimeout(() => getUSer(), 0);
+        const res = await AxiosService.put(`/saleprint/editbillbyid/${editingBill._id}`, updatePayload);
+        if (res.status === 200) {
+          toast.success(`Bill #${editingBill.billNumber} Updated Successfully!`);
+          setEditingBill(null);
+          dispatch(resetCart());
+          setTimeout(() => getUSer('all'), 0);
+        }
+      } else {
+        // New Bill Mode via POST /saleprint/printbill
+        await createBill(paymentType, cart, totalPriceInCart, customeronecart, paymentStatus);
+        toast.success("Transaction Finalized");
+        dispatch(resetCart());
+        setTimeout(() => getUSer('all'), 0);
+      }
     } catch (err) {
-      toast.error("Process Failed");
+      toast.error(editingBill ? "Failed to update bill" : "Process Failed");
     }
   }
 
@@ -435,6 +471,31 @@ function InstaBiller() {
               </div>
             </div>
           </div>
+
+          {/* Editing Mode Banner & Cancel Action */}
+          {editingBill && (
+            <div className="p-4 bg-amber-500/15 border-2 border-amber-500/30 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-3 shadow-md animate-in fade-in slide-in-from-top-2">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-amber-500 text-white flex items-center justify-center text-xl font-black shadow-sm">
+                  ✏️
+                </div>
+                <div>
+                  <h3 className="text-sm font-black text-surface-900 uppercase leading-none">
+                    EDITING MODE ACTIVE: Bill #{editingBill.billNumber}
+                  </h3>
+                  <p className="text-[11px] font-bold text-surface-500 mt-1">
+                    Modifying existing transaction. Click 'Commit & Print' to save updates or 'Cancel Edit' to return to new bill mode.
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={handleCancelEdit}
+                className="px-5 py-2.5 bg-error text-white hover:bg-error-600 rounded-xl text-xs font-black uppercase transition-all shadow-md flex items-center gap-2 shrink-0 active:scale-95"
+              >
+                <MdClose className="text-lg" /> Cancel Edit
+              </button>
+            </div>
+          )}
 
           {/* Cart View */}
           <div className="glass-card overflow-hidden">
