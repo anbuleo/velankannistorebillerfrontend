@@ -75,11 +75,12 @@ function Nav() {
       {
         label: 'Inventory',
         icon: <MdInventory />,
-        paths: ['/product', '/category', '/lowstock', '/barcodeprint', '/market-sync', '/purchase'],
+        paths: ['/product', '/category', '/lowstock', '/barcodeprint', '/market-sync', '/purchase', '/purchase-slip'],
         links: [
           { name: 'Product Catalog', path: '/product' },
           { name: 'Categories', path: '/category' },
           { name: 'Wholesale & Purchase', path: '/purchase' },
+          { name: 'Stock Buying Slip', path: '/purchase-slip' },
           { name: 'Daily Price Sync', path: '/market-sync' },
           { name: 'Low Stock Alert', path: '/lowstock' },
           { name: 'Barcode Generator', path: '/barcodeprint' }
