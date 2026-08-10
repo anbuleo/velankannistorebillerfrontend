@@ -27,12 +27,15 @@ function OfflineSyncManager() {
             for (const bill of [...pendingBills]) {
                 try {
                     const res = await AxiosService.post('/saleprint/printbill', bill);
-                    if (res.status === 201 || res.status === 200) {
+                    if (res.status === 201 || res.status === 200 || res.data?.isDuplicatePrevented) {
                         dispatch(removeQueuedBill(bill.billNumber));
                     }
                 } catch (e) {
                     console.error(`Sync failed for ${bill.billNumber}:`, e.response?.data?.message || e.message);
-                    // Critical items like bills shouldn't stop others unless it's a server-wide error
+                    if (e.response?.status === 409 || e.response?.status === 400) {
+                        // Already exists or invalid; clear to prevent infinite retry loops
+                        dispatch(removeQueuedBill(bill.billNumber));
+                    }
                 }
             }
 

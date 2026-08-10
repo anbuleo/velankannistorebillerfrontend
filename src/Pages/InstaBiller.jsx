@@ -38,6 +38,7 @@ function InstaBiller() {
   const [selectedProductIndex, setSelectedProductIndex] = useState(0)
   const [selectedCustomerIndex, setSelectedCustomerIndex] = useState(-1)
   const [showShortcuts, setShowShortcuts] = useState(false)
+  const [isSaving, setIsSaving] = useState(false)
 
   // Refs for focus management
   const searchInputRef = useRef(null)
@@ -158,6 +159,7 @@ function InstaBiller() {
   }, [dispatch]);
 
   const handleSave = async (shouldPrint = false) => {
+    if (isSaving) return;
     if (cart.length === 0) return toast.warning("Workspace empty");
 
     // Safety: Credit Limit Check
@@ -171,6 +173,7 @@ function InstaBiller() {
       }
     }
 
+    setIsSaving(true);
     try {
       if (shouldPrint) {
         handleEstimatePrint();
@@ -216,6 +219,8 @@ function InstaBiller() {
       console.error("Save/Update Error:", err.response?.data || err);
       const serverMsg = err.response?.data?.message || err.message || '';
       toast.error(editingBill ? `Failed to update bill ${serverMsg ? '(' + serverMsg + ')' : ''}` : `Process Failed ${serverMsg ? '(' + serverMsg + ')' : ''}`);
+    } finally {
+      setIsSaving(false);
     }
   }
 
@@ -678,19 +683,23 @@ function InstaBiller() {
 
             <div className="space-y-3">
               <button
-                disabled={cart.length === 0}
+                disabled={cart.length === 0 || isSaving}
                 onClick={() => handleSave(true)}
-                className="premium-button w-full h-16 bg-primary text-white flex items-center justify-center gap-3 text-lg hover:shadow-primary/40 transition-all active:scale-95"
+                className={`premium-button w-full h-16 text-white flex items-center justify-center gap-3 text-lg transition-all active:scale-95 ${
+                  isSaving ? 'bg-surface-600 opacity-60 cursor-not-allowed' : 'bg-primary hover:shadow-primary/40'
+                }`}
               >
-                <MdPrint className="text-2xl" /> Commit & Print Invoice
+                <MdPrint className="text-2xl" /> {isSaving ? 'Processing...' : 'Commit & Print Invoice'}
               </button>
               <div className="grid grid-cols-2 gap-3">
                 <button
-                  disabled={cart.length === 0}
+                  disabled={cart.length === 0 || isSaving}
                   onClick={() => handleSave(false)}
-                  className="h-12 border-2 border-white/10 rounded-xl font-black text-[10px] uppercase hover:bg-white/5 transition-all flex items-center justify-center gap-2"
+                  className={`h-12 border-2 border-white/10 rounded-xl font-black text-[10px] uppercase transition-all flex items-center justify-center gap-2 ${
+                    isSaving ? 'opacity-50 cursor-not-allowed' : 'hover:bg-white/5'
+                  }`}
                 >
-                  <MdSave className="text-base" /> Quick Save
+                  <MdSave className="text-base" /> {isSaving ? 'Saving...' : 'Quick Save'}
                 </button>
                 <button
                   onClick={() => dispatch(resetCart())}

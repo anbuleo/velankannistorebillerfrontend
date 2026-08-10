@@ -25,6 +25,7 @@ function genrateBill() {
 
     const createBill = async (paymentType, cart, totalPriceInCart, customeronecart, paymentStatus = 'paid') => {
         const billNumber = getNextBillNumber();
+        const idempotencyKey = `IK-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
         const storedData = localStorage.getItem('data');
         const userData = storedData ? JSON.parse(storedData) : {};
         const creatorId = userData?._id || '';
@@ -34,6 +35,7 @@ function genrateBill() {
 
         let val = {
             billNumber: billNumber,
+            idempotencyKey: idempotencyKey,
             customerName: customeronecart?.name || 'customer',
             customerId: customeronecart?._id || null,
             customerMobile: customeronecart?.mobile || null,
@@ -49,7 +51,7 @@ function genrateBill() {
         if (navigator.onLine) {
             try {
                 let res = await AxiosService.post('/saleprint/printbill', val)
-                if (res.status == 201) {
+                if (res.status === 201 || res.status === 200) {
                     const serverBill = res.data?.bill || res.data;
                     if (serverBill && serverBill._id) {
                         dispatch(addAllBills([serverBill, ...(bills || [])]));

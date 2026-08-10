@@ -9,10 +9,16 @@ export const offlineSlice = createSlice({
     initialState,
     reducers: {
         queueBill: (state, action) => {
-            state.pendingBills.push({
-                ...action.payload,
-                queuedAt: new Date().toISOString()
-            });
+            const exists = state.pendingBills.some(b => 
+                (b.billNumber && b.billNumber === action.payload.billNumber) ||
+                (b.idempotencyKey && b.idempotencyKey === action.payload.idempotencyKey)
+            );
+            if (!exists) {
+                state.pendingBills.push({
+                    ...action.payload,
+                    queuedAt: new Date().toISOString()
+                });
+            }
         },
         removeQueuedBill: (state, action) => {
             state.pendingBills = state.pendingBills.filter(b => b.billNumber !== action.payload);
