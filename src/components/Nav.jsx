@@ -1,19 +1,22 @@
 import React, { useContext, useEffect, useState, useMemo } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { UserDataContext } from '../Context/UserDataContext'
+import { useTheme } from '../Context/ThemeContext'
 import { toast } from 'react-toastify'
 import {
   MdMenu, MdAccountCircle, MdLogout, MdKeyboardArrowDown,
-  MdDashboard, MdInventory, MdTrendingUp, MdManageAccounts
+  MdDashboard, MdInventory, MdTrendingUp, MdManageAccounts,
+  MdPalette, MdCheck
 } from 'react-icons/md'
 import AxiosService from '../common/Axioservice'
 
 /**
- * Navigation Bar: Senior-optimized with Strict Memoization.
+ * Navigation Bar: Senior-optimized with Strict Memoization & Theme Switcher.
  * Prevents full-header re-renders during high-frequency page interactions.
  */
 function Nav() {
   const { data, isOnline } = useContext(UserDataContext)
+  const { theme, setTheme, themes } = useTheme()
   const [pendingCount, setPendingCount] = useState(0)
   const navigate = useNavigate()
   const location = useLocation()
@@ -201,7 +204,53 @@ function Nav() {
               </ul>
             </div>
 
-            <div className="flex-1 flex justify-end gap-2">
+            <div className="flex-1 flex justify-end items-center gap-2">
+              {/* Theme Customizer Dropdown */}
+              <div className="dropdown dropdown-end">
+                <div 
+                  tabIndex={0} 
+                  role="button" 
+                  className="btn btn-ghost btn-circle hover:bg-surface-100 transition-all text-surface-700 flex items-center justify-center"
+                  title="Switch Color Theme (6 Themes)"
+                >
+                  <MdPalette className="text-xl text-primary" />
+                </div>
+                <div tabIndex={0} className="mt-3 z-[1] p-3 glass-card dropdown-content bg-white rounded-2xl w-64 border border-surface-200/50 shadow-2xl shadow-surface-900/10">
+                  <div className="px-2 py-1.5 border-b border-surface-100 mb-2 flex items-center justify-between">
+                    <span className="text-[10px] font-black text-surface-400 uppercase tracking-widest flex items-center gap-1.5">
+                      <MdPalette className="text-primary text-sm" /> Color Themes
+                    </span>
+                    <span className="text-[9px] bg-primary/10 text-primary font-bold px-2 py-0.5 rounded-full uppercase">6 Presets</span>
+                  </div>
+                  <div className="grid grid-cols-1 gap-1">
+                    {themes.map(t => (
+                      <button
+                        key={t.id}
+                        onClick={() => {
+                          setTheme(t.id);
+                          toast.info(`Theme set to ${t.name}`, { autoClose: 1000 });
+                        }}
+                        className={`w-full px-3 py-2 rounded-xl flex items-center justify-between text-xs font-bold transition-all ${
+                          theme === t.id 
+                            ? 'bg-primary/10 text-primary border border-primary/20' 
+                            : 'hover:bg-surface-50 text-surface-700'
+                        }`}
+                      >
+                        <div className="flex items-center gap-2.5">
+                          <span 
+                            className="w-4 h-4 rounded-full shadow-sm border border-black/10 flex-shrink-0" 
+                            style={{ backgroundColor: t.primary }}
+                          />
+                          <span>{t.name}</span>
+                        </div>
+                        {theme === t.id && <MdCheck className="text-primary text-base" />}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* User Profile Dropdown */}
               <div className="dropdown dropdown-end">
                 <div tabIndex={0} role="button" className="btn btn-ghost p-1 pr-3 hover:bg-surface-100 rounded-2xl flex items-center gap-3 transition-colors">
                   <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-surface-800 to-surface-900 flex items-center justify-center text-white shadow-md">
@@ -285,6 +334,28 @@ function Nav() {
                 </ul>
               </div>
             ))}
+
+            {/* Mobile Theme Switcher */}
+            <div className="mt-2 mb-4 p-3 bg-surface-50 rounded-2xl border border-surface-200">
+              <h4 className="text-[10px] font-black text-surface-400 uppercase tracking-widest mb-2 px-1 flex items-center gap-1.5">
+                <MdPalette className="text-primary text-sm" /> Color Theme (6 Options)
+              </h4>
+              <div className="grid grid-cols-6 gap-2">
+                {themes.map(t => (
+                  <button
+                    key={t.id}
+                    onClick={() => setTheme(t.id)}
+                    className={`h-8 rounded-xl flex items-center justify-center transition-all ${
+                      theme === t.id ? 'ring-2 ring-offset-2 ring-primary scale-110' : 'opacity-70 hover:opacity-100'
+                    }`}
+                    style={{ backgroundColor: t.primary }}
+                    title={t.name}
+                  >
+                    {theme === t.id && <MdCheck className="text-white text-xs font-bold" />}
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
 
           <div className="p-4 border-t border-surface-100 bg-surface-50">

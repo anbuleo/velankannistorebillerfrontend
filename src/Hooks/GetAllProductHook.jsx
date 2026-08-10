@@ -16,10 +16,10 @@ function GetAllProductHook() {
     const dispatch = useDispatch()
     const lastFetch = useRef(0)
 
-    const getUSer = useCallback(async (target = 'all') => {
-        // Prevent rapid-fire fetching (30s throttle)
+    const getUSer = useCallback(async (target = 'all', force = false) => {
+        // Prevent rapid-fire fetching (30s throttle) unless explicitly forced
         const now = Date.now()
-        if (now - lastFetch.current < 30000 && target === 'all') {
+        if (!force && now - lastFetch.current < 30000 && target === 'all') {
             console.log('Skipping redundant sync - data is fresh')
             return
         }

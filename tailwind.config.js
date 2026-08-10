@@ -8,17 +8,17 @@ export default {
     extend: {
       colors: {
         primary: {
-          50: '#f0f9ff',
-          100: '#e0f2fe',
-          200: '#bae6fd',
-          300: '#7dd3fc',
-          400: '#38bdf8',
-          500: '#0ea5e9',
-          600: '#0284c7',
-          700: '#0369a1',
-          800: '#075985',
-          900: '#0c4a6e',
-          DEFAULT: '#0ea5e9',
+          50: '#fff7ed',
+          100: '#ffedd5',
+          200: '#fed7aa',
+          300: '#fdba74',
+          400: '#fb923c',
+          500: '#f97316',
+          600: '#ea580c',
+          700: '#c2410c',
+          800: '#9a3412',
+          900: '#7c2d12',
+          DEFAULT: '#f97316',
         },
         surface: {
           50: '#f8fafc',
@@ -34,9 +34,9 @@ export default {
           DEFAULT: '#ffffff',
         },
         accent: {
-          light: '#6366f1',
-          DEFAULT: '#4f46e5',
-          dark: '#4338ca',
+          light: '#fb923c',
+          DEFAULT: '#ea580c',
+          dark: '#c2410c',
         }
       },
       fontFamily: {
@@ -44,7 +44,7 @@ export default {
         display: ['Outfit', 'sans-serif'],
       },
       boxShadow: {
-        'premium': '0 10px 40px -10px rgba(0, 0, 0, 0.05)',
+        'premium': '0 10px 40px -10px rgba(249, 115, 22, 0.15)',
         'glass': '0 8px 32px 0 rgba(31, 38, 135, 0.07)',
       }
     },
@@ -55,12 +55,12 @@ export default {
       {
         light: {
           ...require("daisyui/src/theming/themes")["light"],
-          "primary": "#0ea5e9",
-          "secondary": "#6366f1",
+          "primary": "#f97316",
+          "secondary": "#ea580c",
           "accent": "#f59e0b",
           "neutral": "#1e293b",
           "base-100": "#f8fafc",
-          "info": "#0ea5e9",
+          "info": "#f97316",
           "success": "#22c55e",
           "warning": "#f59e0b",
           "error": "#ef4444",

@@ -5,17 +5,19 @@ import {
   addProductToCart, removeProductFromCart, lessoneproduct,
   addProductOne, customizeProductPrice, addCustomerBillOne,
   resetCart, setActiveBill, addBillTab, removeBillTab,
-  ensureActiveBill, handleChangeInKGQty
+  ensureActiveBill, handleChangeInKGQty, loadFullCartForEditing
 } from '../common/CartSlice'
+import { updateBillInRedux } from '../common/SaleCart'
 import {
   MdSearch, MdPrint, MdSave, MdDelete, MdAdd, MdRemove,
   MdLibraryAdd, MdFactCheck, MdAddCircle, MdClose, MdPerson,
-  MdQrCodeScanner, MdPayments, MdHistory, MdKeyboard, MdBackspace, MdCurrencyRupee
+  MdQrCodeScanner, MdPayments, MdHistory, MdKeyboard, MdBackspace, MdCurrencyRupee, MdEdit
 } from "react-icons/md";
 import genrateBill from '../Hooks/genrateBill';
 import { useReactToPrint } from 'react-to-print'
 import PrintItems from '../components/PrintItems';
 import GetAllProductHook from '../Hooks/GetAllProductHook';
+import AxiosService from '../common/Axioservice';
 
 /**
  * InstaBiller: High-Performance POS Interface for Fresh Produce & Retail
@@ -83,27 +85,16 @@ function InstaBiller() {
       billNumber: pastBill.billNumber || `01${pastBill._id?.slice(-4)}`
     });
 
-    dispatch(resetCart());
+    const cust = pastBill.customerName ? {
+      name: pastBill.customerName,
+      mobile: pastBill.customerMobile || '',
+      _id: pastBill.customerId || null
+    } : { name: 'Retail Customer' };
 
-    pastBill.products.forEach(p => {
-      dispatch(addProductToCart({
-        productId: p.productId || p._id,
-        productName: p.productName,
-        productPrice: Number(p.productPrice || 0),
-        productCost: Number(p.productCost || 0),
-        productCode: p.productCode || '',
-        productUnit: p.productUnit || p.unitValue || 1,
-        qantityType: p.qantityType || 'pcs'
-      }));
-    });
-
-    if (pastBill.customerName) {
-      dispatch(addCustomerBillOne({
-        name: pastBill.customerName,
-        mobile: pastBill.customerMobile || '',
-        _id: pastBill.customerId || null
-      }));
-    }
+    dispatch(loadFullCartForEditing({
+      products: pastBill.products,
+      customeronecart: cust
+    }));
 
     if (pastBill.paymentType) setPaymentType(pastBill.paymentType);
     if (pastBill.dueAmount > 0) setPaymentStatus('pending');
@@ -190,9 +181,11 @@ function InstaBiller() {
         const paidAmount = paymentStatus === 'paid' ? totalPriceInCart : 0;
         const dueAmount = paymentStatus === 'paid' ? 0 : totalPriceInCart;
 
+        const validCustId = (customeronecart?._id && typeof customeronecart._id === 'string' && customeronecart._id.length === 24) ? customeronecart._id : null;
+
         const updatePayload = {
-          customerName: customeronecart?.name || 'customer',
-          customerId: customeronecart?._id || null,
+          customerName: customeronecart?.name || 'Retail Customer',
+          customerId: validCustId,
           customerMobile: customeronecart?.mobile || null,
           totalAmount: totalPriceInCart,
           paidAmount,
@@ -203,20 +196,26 @@ function InstaBiller() {
 
         const res = await AxiosService.put(`/saleprint/editbillbyid/${editingBill._id}`, updatePayload);
         if (res.status === 200) {
+          const updatedBill = res.data?.bill;
+          if (updatedBill) {
+            dispatch(updateBillInRedux(updatedBill));
+          }
           toast.success(`Bill #${editingBill.billNumber} Updated Successfully!`);
           setEditingBill(null);
           dispatch(resetCart());
-          setTimeout(() => getUSer('all'), 0);
+          getUSer('all', true);
         }
       } else {
         // New Bill Mode via POST /saleprint/printbill
         await createBill(paymentType, cart, totalPriceInCart, customeronecart, paymentStatus);
         toast.success("Transaction Finalized");
         dispatch(resetCart());
-        setTimeout(() => getUSer('all'), 0);
+        getUSer('all', true);
       }
     } catch (err) {
-      toast.error(editingBill ? "Failed to update bill" : "Process Failed");
+      console.error("Save/Update Error:", err.response?.data || err);
+      const serverMsg = err.response?.data?.message || err.message || '';
+      toast.error(editingBill ? `Failed to update bill ${serverMsg ? '(' + serverMsg + ')' : ''}` : `Process Failed ${serverMsg ? '(' + serverMsg + ')' : ''}`);
     }
   }
 
@@ -342,6 +341,31 @@ function InstaBiller() {
 
         {/* Left Console: Inventory & Workflow */}
         <div className="lg:col-span-8 space-y-6">
+
+          {/* Active Bill Editing Banner */}
+          {editingBill && (
+            <div className="p-4 rounded-2xl bg-amber-500/10 border-2 border-amber-500 flex items-center justify-between gap-4 animate-in fade-in">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-amber-500 text-white flex items-center justify-center font-bold shadow-md">
+                  <MdEdit className="text-xl" />
+                </div>
+                <div>
+                  <h4 className="text-sm font-black text-surface-900 uppercase tracking-tight">
+                    Editing Mode: Bill #{editingBill.billNumber}
+                  </h4>
+                  <p className="text-[11px] font-bold text-amber-700">
+                    Modifications will overwrite existing bill record in history upon saving.
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={handleCancelEdit}
+                className="px-4 py-2 rounded-xl bg-white border border-amber-300 hover:bg-error hover:text-white text-surface-700 text-xs font-black uppercase transition-all flex items-center gap-1 shrink-0 shadow-sm"
+              >
+                <MdClose className="text-base" /> Cancel Edit
+              </button>
+            </div>
+          )}
 
           {/* Main Command Bar */}
           <div className="glass-card p-4 relative z-50">

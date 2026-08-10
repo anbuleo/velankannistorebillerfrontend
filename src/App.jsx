@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { ThemeProvider } from './Context/ThemeContext'
 import Nav from './components/Nav'
 import SignUp from './Pages/SignUp'
 import SignIn from './Pages/SignIn'
@@ -37,7 +38,7 @@ function App() {
 
 
   return (
-    <>
+    <ThemeProvider>
       <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
 
 
@@ -71,7 +72,7 @@ function App() {
         </Routes>
 
       </BrowserRouter>
-    </>
+    </ThemeProvider>
   )
 }
 

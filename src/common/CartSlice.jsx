@@ -175,6 +175,33 @@ export const cartSlice = createSlice({
             bill.cart[idx].productTotal = Math.ceil(qty * Number(bill.cart[idx].productPrice))
             bill.totalPriceInCart = Math.ceil(bill.cart.reduce((acc, cur) => acc + Number(cur.productTotal), 0))
         },
+        loadFullCartForEditing: (state, action) => {
+            const corrupted = validateState(state);
+            if (corrupted) return corrupted;
+
+            const bill = state.bills.find(b => b.id === state.activeBillId) || state.bills[0];
+            if (!bill) return;
+
+            const { products = [], customeronecart } = action.payload;
+            bill.cart = products.map(p => {
+                const qty = Number(p.productQuantity) || 1;
+                const price = Number(p.productPrice) || 0;
+                return {
+                    productId: p.productId || p._id,
+                    productName: p.productName || '',
+                    productPrice: price,
+                    productCost: Number(p.productCost || 0),
+                    productCode: p.productCode || '',
+                    productUnit: p.productUnit || p.unitValue || 1,
+                    qantityType: p.qantityType || 'pcs',
+                    productQuantity: qty,
+                    productTotal: Math.ceil(qty * price)
+                };
+            });
+
+            bill.totalPriceInCart = Math.ceil(bill.cart.reduce((acc, cur) => acc + Number(cur.productTotal), 0));
+            if (customeronecart) bill.customeronecart = customeronecart;
+        },
         resetCart: (state) => {
             const corrupted = validateState(state);
             if (corrupted) return corrupted;
@@ -191,6 +218,7 @@ export const cartSlice = createSlice({
 
 export const {
     resetCart,
+    loadFullCartForEditing,
     handleChangeInKGQty,
     addProductToCart,
     removeProductFromCart,

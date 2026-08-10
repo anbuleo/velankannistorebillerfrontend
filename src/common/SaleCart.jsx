@@ -41,6 +41,18 @@ export const saleCart = createSlice({
             }
             state.totalCreditAmount = state.bills?.reduce((acc, cur) => acc + Number(cur.dueAmount), 0)
         },
+        updateBillInRedux: (state, action) => {
+            const updatedBill = action.payload;
+            if (!updatedBill || !updatedBill._id) return;
+            const index = state.bills.findIndex(b => b._id === updatedBill._id);
+            if (index !== -1) {
+                state.bills[index] = updatedBill;
+            } else {
+                state.bills.unshift(updatedBill);
+            }
+            state.totalBllAmount = state.bills?.reduce((acc, cur) => acc + Number(cur.totalAmount), 0);
+            state.totalCreditAmount = state.bills?.reduce((acc, cur) => acc + Number(cur.dueAmount), 0);
+        },
         totalByCustomer: (state, action) => {
             let id = action.payload
 
@@ -65,6 +77,6 @@ export const saleCart = createSlice({
 
 })
 
-export const { addAllBills, deleteBillbyid, totalByCustomer, settleBillInRedux } = saleCart.actions
+export const { addAllBills, deleteBillbyid, totalByCustomer, settleBillInRedux, updateBillInRedux } = saleCart.actions
 
 export default saleCart.reducer

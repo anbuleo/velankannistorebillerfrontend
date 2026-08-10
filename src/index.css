@@ -2,6 +2,103 @@
 @tailwind components;
 @tailwind utilities;
 
+/* 6 Application Themes Definition with High-Contrast Legibility */
+:root, [data-theme="orange"] {
+  --color-primary: 249 115 22;
+  --color-primary-dark: 234 88 12;
+  --color-primary-light: 255 247 237;
+  --color-primary-text: #ffffff;
+  --shadow-primary-color: rgba(249, 115, 22, 0.35);
+}
+
+[data-theme="emerald"] {
+  --color-primary: 16 185 129;
+  --color-primary-dark: 5 150 105;
+  --color-primary-light: 236 253 245;
+  --color-primary-text: #ffffff;
+  --shadow-primary-color: rgba(16, 185, 129, 0.35);
+}
+
+[data-theme="blue"] {
+  --color-primary: 37 99 235;
+  --color-primary-dark: 29 78 216;
+  --color-primary-light: 239 246 255;
+  --color-primary-text: #ffffff;
+  --shadow-primary-color: rgba(37, 99, 235, 0.35);
+}
+
+[data-theme="purple"] {
+  --color-primary: 139 92 246;
+  --color-primary-dark: 124 58 237;
+  --color-primary-light: 245 243 255;
+  --color-primary-text: #ffffff;
+  --shadow-primary-color: rgba(139, 92, 246, 0.35);
+}
+
+[data-theme="red"] {
+  --color-primary: 239 68 68;
+  --color-primary-dark: 220 38 38;
+  --color-primary-light: 254 242 242;
+  --color-primary-text: #ffffff;
+  --shadow-primary-color: rgba(239, 68, 68, 0.35);
+}
+
+[data-theme="amber"] {
+  --color-primary: 245 158 11;
+  --color-primary-dark: 217 119 6;
+  --color-primary-light: 255 251 235;
+  --color-primary-text: #0f172a;
+  --shadow-primary-color: rgba(245, 158, 11, 0.35);
+}
+
+/* Dynamic Theme Utilities & Crisp Text Contrast */
+.bg-primary {
+  background-color: rgb(var(--color-primary)) !important;
+  color: var(--color-primary-text) !important;
+}
+
+.text-primary {
+  color: rgb(var(--color-primary)) !important;
+}
+
+.border-primary {
+  border-color: rgb(var(--color-primary)) !important;
+}
+
+.btn-primary {
+  background-color: rgb(var(--color-primary)) !important;
+  border-color: rgb(var(--color-primary)) !important;
+  color: var(--color-primary-text) !important;
+  font-weight: 800 !important;
+}
+
+.btn-primary:hover {
+  background-color: rgb(var(--color-primary-dark)) !important;
+  border-color: rgb(var(--color-primary-dark)) !important;
+}
+
+.badge-primary {
+  background-color: rgb(var(--color-primary)) !important;
+  color: var(--color-primary-text) !important;
+  font-weight: 800 !important;
+}
+
+.bg-primary\/10 {
+  background-color: rgb(var(--color-primary) / 0.12) !important;
+}
+
+.bg-primary\/20 {
+  background-color: rgb(var(--color-primary) / 0.2) !important;
+}
+
+.bg-primary\/5 {
+  background-color: rgb(var(--color-primary) / 0.05) !important;
+}
+
+.text-primary-300 {
+  color: rgb(var(--color-primary) / 0.7) !important;
+}
+
 @layer base {
   body {
     @apply font-sans bg-surface-50 text-surface-900 antialiased;
@@ -83,3 +180,4 @@
   from { opacity: 0; transform: translateY(10px); }
   to { opacity: 1; transform: translateY(0); }
 }
+
