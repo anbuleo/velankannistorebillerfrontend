@@ -53,7 +53,7 @@ function genrateBill() {
                 let res = await AxiosService.post('/saleprint/printbill', val)
                 if (res.status === 201 || res.status === 200) {
                     const serverBill = res.data?.bill || res.data;
-                    if (serverBill && serverBill._id) {
+                    if (serverBill) {
                         dispatch(addAllBills([serverBill, ...(bills || [])]));
                     }
                     return { ...res.data, billNumber: serverBill?.billNumber || billNumber };
