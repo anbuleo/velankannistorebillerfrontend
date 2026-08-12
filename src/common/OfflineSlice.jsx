@@ -21,7 +21,11 @@ export const offlineSlice = createSlice({
             }
         },
         removeQueuedBill: (state, action) => {
-            state.pendingBills = state.pendingBills.filter(b => b.billNumber !== action.payload);
+            const targetKey = action.payload;
+            if (!targetKey) return;
+            state.pendingBills = state.pendingBills.filter(b => 
+                b.billNumber !== targetKey && b.idempotencyKey !== targetKey
+            );
         },
         clearQueue: (state) => {
             state.pendingBills = [];

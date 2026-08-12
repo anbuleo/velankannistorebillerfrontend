@@ -49,6 +49,7 @@ function InstaBiller() {
   const { bills = [], activeBillId } = useSelector((state) => state.cart || { bills: [], activeBillId: null })
   const { customer = [] } = useSelector((state) => state.customer)
   const { balanceSheet = [] } = useSelector((state) => state.balancesheet || { balanceSheet: [] });
+  const { pendingBills = [] } = useSelector((state) => state.offline || { pendingBills: [] });
   const saleBills = useSelector((state) => state.sale?.bills || []);
   const userData = JSON.parse(localStorage.getItem('data'))
   const isAdmin = userData?.role === 'admin'
@@ -306,7 +307,13 @@ function InstaBiller() {
           <div>
             <h1 className="text-3xl font-display font-black text-surface-900 leading-none">Checkout</h1>
             <p className="text-[10px] font-black text-surface-400 uppercase tracking-[0.2em] mt-1 flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-success"></span> Systems Ready • {currentTime}
+              <span className={`w-2 h-2 rounded-full ${navigator.onLine ? 'bg-success' : 'bg-amber-500 animate-ping'}`}></span>
+              {navigator.onLine ? 'Cloud Active' : 'Offline Mode'} • {currentTime}
+              {pendingBills.length > 0 && (
+                <span className="badge badge-error text-white font-black text-[9px] uppercase ml-2 animate-pulse">
+                  {pendingBills.length} Offline Queued
+                </span>
+              )}
             </p>
           </div>
         </div>

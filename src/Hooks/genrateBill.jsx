@@ -4,6 +4,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { addAllCustomer } from '../common/CustomerSlice'
 import { resetCart } from '../common/CartSlice'
 import { queueBill } from '../common/OfflineSlice'
+import { addAllBills, updateBillInRedux } from '../common/SaleCart'
 import { toast } from 'react-toastify'
 import axios from 'axios'
 import { useNavigate } from 'react-router-dom'
@@ -54,7 +55,7 @@ function genrateBill() {
                 if (res.status === 201 || res.status === 200) {
                     const serverBill = res.data?.bill || res.data;
                     if (serverBill) {
-                        dispatch(addAllBills([serverBill, ...(bills || [])]));
+                        dispatch(updateBillInRedux(serverBill));
                     }
                     return { ...res.data, billNumber: serverBill?.billNumber || billNumber };
                 }
