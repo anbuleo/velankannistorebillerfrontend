@@ -34,6 +34,16 @@ function genrateBill() {
         let paidAmount = paymentStatus === 'paid' ? totalPriceInCart : 0;
         let dueAmount = paymentStatus === 'paid' ? 0 : totalPriceInCart;
 
+        const mappedProducts = Array.isArray(cart) ? cart.map(item => ({
+            productId: item.productId || item._id,
+            productName: item.productName,
+            productQuantity: Number(item.productQuantity || item.quantity || 1),
+            productPrice: Number(item.productPrice || item.price || 0),
+            productCost: Number(item.productCost || item.cost || 0),
+            productUnit: item.productUnit || item.unitValue || '',
+            qantityType: item.qantityType || ''
+        })) : [];
+
         let val = {
             billNumber: billNumber,
             idempotencyKey: idempotencyKey,
@@ -45,7 +55,7 @@ function genrateBill() {
             dueAmount: dueAmount,
             createBy: creatorId,
             paymentType: paymentType,
-            products: cart
+            products: mappedProducts
         }
 
         // Logic: Try Online, Fallback to Offline Queue

@@ -574,44 +574,130 @@ function PurchaseSlip() {
 
       </div>
 
-      {/* Official Print Layout (Hidden on Screen, Visible on Print) */}
-      <div className="hidden print:block print:p-8 font-sans">
-        <div className="text-center border-b-2 border-black pb-4 mb-6">
-          <h1 className="text-2xl font-bold uppercase">VELANKANNI STORE - STOCK BUYING SLIP</h1>
-          <p className="text-xs text-gray-600 mt-1">Date: {selectedDate} | Slip Title: {activeSlip?.title || 'Daily Procurement List'}</p>
+      {/* Official Thermal Print Layout (Hidden on Screen, Visible on Print) */}
+      <div 
+        className="hidden print:block text-black bg-white select-none" 
+        id="thermal-purchase-slip"
+        style={{ 
+          width: '300px', 
+          margin: '0 auto',
+          fontFamily: "Arial, 'Helvetica Neue', Helvetica, sans-serif",
+          fontWeight: 900,
+          color: '#000000',
+          WebkitFontSmoothing: 'antialiased'
+        }}
+      >
+        <style dangerouslySetInnerHTML={{ __html: `
+          @media print {
+            @page { 
+              size: 80mm auto; 
+              margin: 0; 
+            }
+            html, body {
+              margin: 0 !important;
+              padding: 0 !important;
+              width: 80mm !important;
+              background: white !important;
+              color: black !important;
+              font-weight: 900 !important;
+            }
+            #thermal-purchase-slip { 
+              display: block !important;
+              width: 80mm !important; 
+              margin: 0 !important;
+              padding: 4px !important;
+              font-weight: 900 !important;
+            }
+            * {
+              font-weight: 900 !important;
+              color: #000000 !important;
+            }
+          }
+        ` }} />
+
+        {/* Header Section */}
+        <div className="text-center mb-2">
+          <h2 className="text-lg font-extrabold uppercase leading-tight" style={{ fontWeight: 900 }}>
+            வேளாங்கண்ணி ஸ்டோர்
+          </h2>
+          <p className="text-xs font-black uppercase tracking-widest mt-0.5" style={{ fontWeight: 900 }}>
+            STOCK PROCUREMENT SLIP
+          </p>
+          <p className="text-xs font-black mt-1" style={{ fontWeight: 900 }}>
+            ====================================
+          </p>
         </div>
 
-        <table className="w-full text-xs border-collapse border mb-6">
-          <thead>
-            <tr className="bg-gray-200 border-b">
-              <th className="p-2 border text-center w-10">#</th>
-              <th className="p-2 border text-left">Item Description</th>
-              <th className="p-2 border text-center">Qty & Unit</th>
-              <th className="p-2 border text-left">Preferred Supplier</th>
-              <th className="p-2 border text-center w-16">Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            {itemsList.map((item, i) => (
-              <tr key={i} className="border-b">
-                <td className="p-2 border text-center">{i + 1}</td>
-                <td className="p-2 border font-bold uppercase">{item.itemName}</td>
-                <td className="p-2 border text-center font-bold">{item.quantityNeeded} {item.unit}</td>
-                <td className="p-2 border">{item.vendorName || 'General Market'}</td>
-                <td className="p-2 border text-center font-bold">{item.isPurchased ? '[X] BOUGHT' : '[ ] PENDING'}</td>
+        {/* Meta Details */}
+        <div className="flex justify-between text-xs mb-2 px-1 font-extrabold" style={{ fontWeight: 900 }}>
+          <div>
+            <p className="font-extrabold" style={{ fontWeight: 900 }}>DATE: {selectedDate}</p>
+            <p className="font-extrabold" style={{ fontWeight: 900 }}>SLIP: {activeSlip?.title || 'PROCUREMENT'}</p>
+          </div>
+          <div className="text-right">
+            <p className="font-extrabold" style={{ fontWeight: 900 }}>ITEMS: {itemsList.length}</p>
+            <p className="font-extrabold" style={{ fontWeight: 900 }}>PENDING: {pendingCount}</p>
+          </div>
+        </div>
+
+        {/* Items Table */}
+        <div className="border-t-2 border-b-2 border-black py-1">
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr className="text-xs font-extrabold border-b-2 border-black" style={{ fontWeight: 900 }}>
+                <th className="py-1"># ITEM</th>
+                <th className="text-center py-1">QTY</th>
+                <th className="text-right py-1">STATUS</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-
-        <div className="mt-12 pt-6 border-t border-gray-400 flex justify-between text-xs">
-          <div>
-            <p className="border-t border-black pt-1 w-48 text-center font-bold">Purchaser Signature</p>
-          </div>
-          <div>
-            <p className="border-t border-black pt-1 w-48 text-center font-bold">Store Verification</p>
-          </div>
+            </thead>
+            <tbody>
+              {itemsList.map((item, i) => (
+                <tr key={i} className="text-xs font-extrabold border-b border-gray-300 last:border-0" style={{ fontWeight: 900 }}>
+                  <td className="py-1 align-top">
+                    <div className="uppercase">
+                      <span className="font-extrabold text-xs" style={{ fontWeight: 900 }}>
+                        {i + 1}. {item.itemName}
+                      </span>
+                      <span className="text-[10px] font-extrabold block text-gray-800" style={{ fontWeight: 900 }}>
+                        SUP: {item.vendorName || 'General Market'}
+                      </span>
+                    </div>
+                  </td>
+                  <td className="text-center py-1 align-top font-extrabold text-xs" style={{ fontWeight: 900 }}>
+                    {item.quantityNeeded} {item.unit}
+                  </td>
+                  <td className="text-right py-1 align-top font-extrabold text-xs" style={{ fontWeight: 900 }}>
+                    {item.isPurchased ? '[BOUGHT]' : '[PENDING]'}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
+
+        {/* Totals / Summary */}
+        <div className="mt-2 space-y-1 px-1 font-extrabold" style={{ fontWeight: 900 }}>
+          <div className="flex justify-between text-xs font-extrabold border-b-2 border-dashed border-black pb-1.5" style={{ fontWeight: 900 }}>
+            <span>PROGRESS:</span>
+            <span className="text-xs font-extrabold" style={{ fontWeight: 900 }}>{purchasedCount} / {itemsList.length} BOUGHT</span>
+          </div>
+          {totalActualCost > 0 && (
+            <div className="flex justify-between items-center text-sm font-extrabold pt-1" style={{ fontWeight: 900 }}>
+              <span>TOTAL COST:</span>
+              <span className="text-lg font-extrabold tracking-tight" style={{ fontWeight: 900 }}>₹{totalActualCost.toLocaleString()}</span>
+            </div>
+          )}
+        </div>
+
+        {/* Footer Remarks */}
+        <div className="mt-4 text-center border-t-2 border-dashed border-black pt-3">
+          <p className="text-xs font-extrabold">====================================</p>
+          <p className="text-xs uppercase font-extrabold mt-2" style={{ fontWeight: 900 }}>PURCHASER SIGNATURE</p>
+          <div className="h-10"></div>
+        </div>
+
+        {/* Paper Cutter Margin */}
+        <div className="h-14"></div>
       </div>
 
     </div>
